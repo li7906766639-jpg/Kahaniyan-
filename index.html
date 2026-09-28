@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#0d0d0f">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Kahaniyon Chat Story</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Yatra+One&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js" onerror="window.__fbLoadFailed=true"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js" onerror="window.__fbLoadFailed=true"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js" onerror="window.__fbLoadFailed=true"></script>
+<style>
+:root,[data-theme="dark"]{
+  --bg:#0d0d0f; --surface:#19191c; --surface2:#23262d; --line:#2a2a2f; --text:#f5f2ee; --muted:#8d8b89;
+  --bar:#111114; --ai:#242830; --ai-text:#f1eeea; --em:#a9aebb; --gold:#e7c26b; --red:#e5322d; --red-dim:#7a1f1d; --nar:rgba(255,255,255,.05);
+  --doodle:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170' viewBox='0 0 170 170' fill='none' stroke='%23ffffff' stroke-opacity='.06' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M30 40c-8-10 4-20 10-10 6-10 18 0 10 10l-10 12z'/><circle cx='118' cy='34' r='9'/><path d='M126 104l4 9 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1z'/><path d='M28 118h20v15H28zM33 118l2-5h8l2 5'/><circle cx='38' cy='126' r='3.5'/><path d='M84 148c0-9 14-9 14 0M100 70h16M108 62v16'/></svg>");
+  color-scheme:dark;
+}
+[data-theme="light"]{
+  --bg:#f6f3ee; --surface:#ffffff; --surface2:#ebe8e2; --line:#dcd7cf; --text:#1b1a19; --muted:#6c6862;
+  --bar:#ffffff; --ai:#e6e9ef; --ai-text:#1b1a19; --em:#5d6270; --gold:#8a5d00; --nar:rgba(0,0,0,.04);
+  --doodle:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170' viewBox='0 0 170 170' fill='none' stroke='%23000000' stroke-opacity='.07' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M30 40c-8-10 4-20 10-10 6-10 18 0 10 10l-10 12z'/><circle cx='118' cy='34' r='9'/><path d='M126 104l4 9 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1z'/><path d='M28 118h20v15H28zM33 118l2-5h8l2 5'/><circle cx='38' cy='126' r='3.5'/><path d='M84 148c0-9 14-9 14 0M100 70h16M108 62v16'/></svg>");
+  color-scheme:light;
+}
+:root{
+  --display:"Yatra One",Georgia,"Times New Roman",serif;
+  --body:"Hind",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:#000;color:var(--text);font-family:var(--body);font-size:16px;line-height:1.45;overscroll-behavior-y:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+#app{position:relative;max-width:480px;height:100%;height:100dvh;margin:0 auto;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+#screen{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-top:var(--safe-t)}
+#screen.chat{overflow:hidden;display:flex;flex-direction:column}
+
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 6px}
+.logo{margin:0;font-family:var(--display);font-weight:400;font-size:34px;letter-spacing:.5px;line-height:1;user-select:none;-webkit-user-select:none}
+.avatar-btn{width:40px;height:40px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;color:var(--gold)}
+.tabs{display:flex;gap:26px;padding:10px 20px 0;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:8px 0 12px;font-size:18px;font-weight:600;color:var(--muted);white-space:nowrap;position:relative}
+.tab[aria-selected="true"]{color:var(--text)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--red)}
+.pad{padding:16px 20px 24px}
+.h2{font-size:24px;font-weight:700;margin:26px 0 14px}
+
+.cover{position:relative;overflow:hidden;isolation:isolate;
+  background:radial-gradient(120% 70% at 75% 0%,color-mix(in srgb,var(--glow) 38%,transparent),transparent 62%),linear-gradient(165deg,var(--c1),var(--c2))}
+.cover.has-img{background-size:cover;background-position:center;background-color:#000}
+.cover-sym{position:absolute;width:78%;left:11%;top:22%;opacity:.22;z-index:-1}
+.cover-title{font-family:var(--display);color:#e7c26b;line-height:1.02}
+.cover-sub{color:rgba(255,255,255,.8)}
+
+.hero{border-radius:22px;aspect-ratio:4/5;display:flex;flex-direction:column;padding:22px 20px 18px;box-shadow:0 0 0 1px rgba(255,255,255,.05);color:#fff}
+.hero .chip{align-self:flex-start;font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.18);margin-bottom:10px;color:#fff}
+.hero .cover-title{font-size:clamp(38px,12.5vw,58px)}
+.hero .cover-sub{font-size:17px;margin-top:10px;max-width:16em}
+.hero .spacer{flex:1}
+.start{width:100%;padding:15px;border-radius:16px;background:rgba(40,40,44,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-size:19px;font-weight:700;letter-spacing:.3px;border:1px solid rgba(255,255,255,.12);color:#fff}
+.start:active{background:var(--red)}
+
+.rail{display:flex;gap:16px;overflow-x:auto;margin:0 -20px;padding:0 20px 4px;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail-item{flex:0 0 84px;text-align:center}
+.rail-item .cover{width:78px;height:78px;border-radius:50%;margin:0 auto 8px;border:2px solid var(--red-dim)}
+.rail-item .cover-sym{width:70%;left:15%;top:15%;opacity:.5}
+.rail-item span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;font-weight:600;line-height:1.25}
+.empty{color:var(--muted);font-size:15px;padding:6px 0}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{text-align:left}
+.card .cover{aspect-ratio:3/4;border-radius:16px;padding:14px 12px;display:flex;flex-direction:column}
+.card .cover-title{font-size:24px}
+.card .cover-sub{font-size:12.5px;margin-top:auto}
+.card b{display:block;margin-top:8px;font-size:15px}
+.card small{color:var(--muted);font-size:13px}
+.row-item{display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.row-item .cover{flex:0 0 70px;height:92px;border-radius:12px}
+.row-item .cover-sym{width:80%;left:10%;top:20%}
+.row-item .meta{flex:1;min-width:0}
+.row-item .t{font-size:18px;font-weight:700}
+.row-item .g{font-size:13px;color:var(--gold)}
+.row-item .s{font-size:14px;color:var(--muted);margin-top:2px}
+.rank{flex:0 0 26px;font-family:var(--display);font-size:26px;color:var(--muted);text-align:center}
+.rank.top3{color:var(--gold)}
+.badge{font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--red);margin-left:6px;vertical-align:middle;color:#fff}
+.pill-btn{padding:8px 14px;border-radius:99px;background:var(--surface2);font-weight:600;font-size:14px;white-space:nowrap}
+
+.search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 14px;margin-bottom:8px}
+.search input{flex:1;height:48px;background:none;border:0;color:var(--text);font:inherit;font-size:17px;outline-offset:6px}
+.search svg{color:var(--muted);flex:0 0 auto}
+
+#nav{display:flex;border-top:1px solid var(--line);background:var(--bar);padding-bottom:var(--safe-b)}
+#nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 9px;color:var(--muted);font-size:14px;font-weight:600}
+#nav button[aria-current="page"]{color:var(--text)}
+#nav.hide{display:none}
+
+.cbar{margin:10px 20px 0;padding:12px 14px;border-radius:14px;background:#2a1f10;border:1px solid #5a4218;color:#f3e2bd}
+.cbar b{display:block;margin-bottom:8px}
+.cbar .acts{display:flex;gap:8px;flex-wrap:wrap}
+.cbar .pill-btn{background:#3b2d16;color:#f3e2bd}
+
+/* chat */
+.chat-head{display:flex;align-items:center;gap:8px;padding:10px 10px;border-bottom:1px solid var(--line);background:var(--bar)}
+.icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:var(--text);flex:0 0 auto}
+.icon-btn:active{background:var(--surface2)}
+.hav{position:relative;flex:0 0 46px;height:46px}
+.hav .cover{width:46px;height:46px;border-radius:50%}
+.hav .cover-sym{width:70%;left:15%;top:15%;opacity:.5}
+.hav .dot{position:absolute;right:0;bottom:0;width:13px;height:13px;border-radius:50%;background:#22c55e;border:2px solid var(--bar)}
+.chat-head .who{flex:1;min-width:0;padding-left:2px}
+.chat-head .who b{display:block;font-size:18px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-head .who small{color:var(--muted);font-size:14px}
+.chatbody{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+#msgs{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px 14px 10px;display:flex;flex-direction:column;gap:12px;background-color:var(--bg);background-image:var(--doodle)}
+.pw{text-align:center;color:var(--muted);font-size:16px;padding:6px 0 0}
+.about{border:1px solid var(--line);border-radius:22px;background:var(--surface);padding:14px}
+.strip{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.strip::-webkit-scrollbar{display:none}
+.shot{flex:0 0 46%;aspect-ratio:1/1.12;border-radius:16px;background-size:cover;background-position:center;background-color:var(--surface2)}
+.shot.poster{padding:14px 12px;display:flex;flex-direction:column}
+.shot.poster .cover-title{font-size:26px}
+.shot.poster .cover-sub{font-size:12.5px;margin-top:auto}
+.about h3{margin:16px 6px 4px;font-size:22px;font-weight:600}
+.about p{margin:0 6px;font-size:18px;line-height:1.5;white-space:pre-wrap}
+.price{display:flex;align-items:center;gap:10px;width:max-content;margin:16px auto 4px;background:var(--surface2);border-radius:99px;padding:8px 22px 8px 12px;font-size:18px;color:var(--muted)}
+.coin{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#f5b300;color:#5a3a00;font-weight:700;font-size:18px;border:3px solid #ffcf3d}
+.about .edit-row{margin:12px 6px 0}
+.row{display:flex;max-width:100%}
+.row.u{justify-content:flex-end}
+.msgActs{display:flex;gap:4px;margin:-4px 0 2px 4px}
+.msgActs button{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+.msgActs button:active{background:var(--surface2);color:var(--text)}
+.msgActs button:disabled{opacity:.4}
+.bub{max-width:88%;padding:14px 16px;border-radius:20px;font-size:17px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.bub.a{background:var(--ai);color:var(--ai-text);border-bottom-left-radius:8px}
+.bub.a em{color:var(--em)}
+.bub.u{background:var(--user-bubble,var(--red));color:#fff;border-bottom-right-radius:8px;max-width:82%}
+.bub .pic{display:block;width:100%;border-radius:14px;margin-bottom:10px;cursor:zoom-in}
+.typing{display:flex;gap:5px;padding:18px 18px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1.1s infinite}
+.typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.err{background:#2a1414;color:#f5e6e4;border:1px solid var(--red-dim);border-radius:14px;padding:12px 14px;font-size:15px}
+.err .acts{display:flex;gap:8px;margin-top:10px}
+.err .pill-btn{background:#3a1e1e;color:#fff}
+.down{position:absolute;right:14px;bottom:10px;width:46px;height:46px;border-radius:50%;background:var(--surface2);border:1px solid var(--line);display:grid;place-items:center;color:var(--text);box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.down[hidden]{display:none}
+.composer{padding:8px 12px calc(10px + var(--safe-b));background:var(--bg)}
+.tray{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none;align-items:center}
+.tray:empty{display:none}
+.tray::-webkit-scrollbar{display:none}
+.chip-btn{flex:0 0 auto;padding:8px 14px;border-radius:99px;border:1px solid var(--line);font-size:15px;font-weight:500;background:var(--surface);max-width:78vw;text-align:left}
+.chip-btn.go{background:var(--red);border-color:var(--red);font-weight:700;color:#fff}
+.chip-btn em{color:var(--em)}
+.tray .muted{color:var(--muted);font-size:14px;padding:6px 4px}
+.inputrow{display:flex;gap:10px;align-items:flex-end}
+.pillfield{flex:1;min-width:0;display:flex;align-items:flex-end;background:var(--surface2);border-radius:27px;padding:0 4px 0 20px}
+.pillfield:focus-within{outline:2px solid var(--gold)}
+.pillfield textarea{flex:1;min-width:0;background:none;border:0;color:var(--text);font:inherit;font-size:17px;padding:14px 0;resize:none;max-height:120px;outline:0;line-height:1.3}
+.bulb{flex:0 0 46px;height:54px;display:grid;place-items:center;color:var(--text)}
+.round{flex:0 0 54px;height:54px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;color:var(--text)}
+.round.send{background:var(--red);color:#fff}
+.round.rec{background:var(--red);color:#fff;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(229,50,45,.5)}50%{box-shadow:0 0 0 10px rgba(229,50,45,0)}}
+
+/* overlays */
+#sheet{position:absolute;inset:0;z-index:20;display:none;align-items:flex-end;background:rgba(0,0,0,.6)}
+#menu{position:absolute;z-index:26;display:none;min-width:236px;max-width:80vw;background:#1c1c20;border-radius:18px;box-shadow:0 14px 34px rgba(0,0,0,.5);border:1px solid var(--line);overflow:hidden}
+[data-theme="light"] #menu{background:#ffffff}
+#menu.open{display:block}
+.mrow{display:flex;align-items:center;gap:13px;padding:13px 16px;width:100%;text-align:left;color:var(--text);font-size:16.5px}
+.mrow:active{background:var(--surface2)}
+.mrow.danger{color:#ff5850}
+.mrow .ic{flex:0 0 22px;display:grid;place-items:center;color:inherit}
+.mrow .grow{flex:1;min-width:0}
+.mrow .grow small{display:block;color:var(--muted);font-weight:400;font-size:12.5px}
+.mrow .grow b{font-weight:700}
+.mdiv{height:1px;background:var(--line)}
+.coin2{width:24px;height:24px;border-radius:50%;background:#f5b300;color:#5a3a00;font-weight:700;font-size:13px;display:grid;place-items:center;border:2px solid #ffcf3d}
+.bub,.pw~.about .strip,.chat-head .who{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.bub.pressed{filter:brightness(.82)}
+.prof-row{display:flex;align-items:center;gap:16px;padding:10px 0 8px}
+.prof-av{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:26px;font-weight:700;flex:0 0 auto}
+.prof-name{font-size:21px}
+.prof-sub{color:var(--muted);font-size:14.5px;margin-top:2px}
+.coincard{display:flex;align-items:center;gap:14px;background:linear-gradient(100deg,#2c2308,#1a1610);border:1px solid #4a3a12;border-radius:18px;padding:16px 18px;margin-top:18px}
+[data-theme="light"] .coincard{background:linear-gradient(100deg,#fff3d6,#fdebc0);border-color:#f0d99a}
+.coincard .coin.big{width:46px;height:46px;font-size:20px;border-radius:50%;background:#f5b300;color:#5a3a00;font-weight:700;display:grid;place-items:center;border:3px solid #ffcf3d;flex:0 0 auto}
+.coincard small{display:block;color:var(--muted);font-size:13.5px}
+.coincard b{font-size:26px}
+.plist{border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:4px}
+.prow{display:flex;align-items:center;gap:14px;width:100%;padding:15px 16px;text-align:left;font-size:16.5px;border-bottom:1px solid var(--line);color:var(--text)}
+.prow:last-child{border-bottom:0}
+.prow:active{background:var(--surface2)}
+.prow .grow{flex:1}
+.prow.danger{color:#ff5850;margin-top:16px;border:1px solid var(--red-dim);border-radius:14px}
+.madewith{text-align:center;color:var(--muted);font-size:15px;margin-top:26px}
+.verline{text-align:center;color:#5f5c58;font-size:12.5px;line-height:1.6;margin:4px 0 10px}
+.faqlist details{border-bottom:1px solid var(--line);padding:12px 2px}
+.faqlist summary{font-weight:600;font-size:16px;cursor:pointer;list-style:none}
+.faqlist summary::-webkit-details-marker{display:none}
+.faqlist p{color:var(--muted);font-size:15px;margin:8px 0 0}
+.linklist a{display:block;color:var(--text);text-decoration:none;background:var(--surface2);border-radius:12px;padding:13px 16px;margin-bottom:10px;font-weight:600}
+#sheet.open{display:flex}
+.sheet-body{width:100%;max-height:92%;overflow-y:auto;background:var(--bar);border-radius:24px 24px 0 0;padding:20px 20px calc(20px + var(--safe-b));border-top:1px solid var(--line)}
+.sheet-body h2{margin:0 0 4px;font-size:22px}
+.sheet-body p{margin:0 0 14px;color:var(--muted);font-size:14.5px}
+#lb{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.94)}
+#splash{position:absolute;inset:0;z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--bg);opacity:1;transition:opacity .4s}
+#splash.show{display:flex}
+#splash.fade{opacity:0}
+#splashImg{width:132px;height:132px;border-radius:30px;object-fit:cover;box-shadow:0 14px 34px rgba(0,0,0,.45);transition:.3s}
+#splashImg.wide{width:86%;height:70%;border-radius:20px}
+#splashName{font-family:var(--display);font-size:30px;color:var(--text);text-align:center;letter-spacing:.5px;padding:0 20px;transition:opacity .3s}
+#splashName:empty{display:none}
+#lb.open{display:flex}
+#lb img{max-width:100%;max-height:100%;object-fit:contain}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-size:16px;height:46px}
+.field textarea{height:auto;min-height:92px;padding:10px 14px;resize:vertical;line-height:1.4}
+.field small{display:block;color:var(--muted);font-size:13px;margin-top:5px}
+.gpick-row{display:flex;gap:8px;flex-wrap:wrap}
+.gpick{padding:10px 16px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-size:14.5px;font-weight:600;color:var(--text)}
+.gpick.on{background:var(--red);border-color:var(--red);color:#fff}
+.notice{background:#2a1f10;color:#f3e2bd;border:1px solid #5a4218;border-radius:12px;padding:10px 12px;font-size:14.5px;margin-bottom:14px;display:none}
+.notice.on{display:block}
+.btn{width:100%;height:48px;border-radius:14px;font-weight:700;font-size:17px;background:var(--red);color:#fff}
+.btn.ghost{background:var(--surface2);color:var(--text);margin-top:10px}
+.btn.danger{background:none;color:#ff7a75;border:1px solid var(--red-dim);margin-top:10px}
+.avrow{display:flex;align-items:center;gap:10px}
+.avprev{width:64px;height:64px;border-radius:50%;background:var(--surface2) center/cover no-repeat;border:1px solid var(--line)}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap}
+.urlrow{display:flex;gap:8px;margin-top:10px}
+.urlrow input{flex:1;height:42px;padding:0 12px;border-radius:11px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-size:14.5px}
+.urlrow .pill-btn{flex:0 0 auto}
+.thumb{position:relative;width:84px;height:96px;border-radius:12px;background:var(--surface2) center/cover no-repeat;border:1px solid var(--line);display:grid;place-items:center;font-size:30px;color:var(--muted)}
+.thumb button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;font-size:16px;line-height:1}
+.stickybar{position:sticky;bottom:0;padding:12px 20px calc(12px + var(--safe-b));background:var(--bar);border-top:1px solid var(--line)}
+#toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);z-index:50;background:#f5f2ee;color:#111;padding:10px 16px;border-radius:99px;font-size:15px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;max-width:88%;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#rot{position:fixed;inset:0;z-index:100;background:#0d0d0f;color:#f5f2ee;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
+#rot.on{display:flex}
+@media (prefers-reduced-motion:reduce){.typing i,.round.rec{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="splash"><img id="splashImg" alt=""><div id="splashName"></div></div>
+  <div id="screen"></div>
+  <nav id="nav" aria-label="Main">
+    <button data-a="nav" data-v="home" aria-label="Home"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3z"/></svg>Home</button>
+    <button data-a="nav" data-v="search" aria-label="Search"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>Search</button>
+    <button data-a="nav" data-v="chats" aria-label="Chats"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M21 3 3 10.5l7 2.5 2.5 7z"/></svg>Chats</button>
+  </nav>
+  <div id="sheet" role="dialog" aria-modal="true"><div class="sheet-body" id="sheetBody"></div></div>
+  <div id="menu" class="dropmenu" role="menu"></div>
+  <div id="lb" role="dialog" aria-modal="true" aria-label="Photo" data-a="closeOv"></div>
+  <div id="toast" role="status"></div>
+</div>
+<div id="rot"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#e7c26b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18.5h2"/></svg><b style="font-size:20px">Phone ko seedha rakho</b><span style="color:#8d8b89">Ye app sirf portrait mode mein chalta hai.</span></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2400); }
+function fmt(t){ return esc(String(t || '').trim()).replace(/\*{2,}/g,'*').replace(/\*([^*\n]+)\*/g,'<em>$1</em>'); }
+
+/* IndexedDB (photos aur creator data ke liye) */
+const idb = {
+  open(){ return new Promise((res, rej) => { const r = indexedDB.open('kahaniyon', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async get(k){ const db = await this.open(); return new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); },
+  async set(k, v){ const db = await this.open(); return new Promise((res, rej) => { const t = db.transaction('kv','readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); }); }
+};
+function fileToDataUrl(file, max, q){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.round(img.width * k), h = Math.round(img.height * k);
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0,0,w,h); x.drawImage(img,0,0,w,h);
+        res(c.toDataURL('image/jpeg', q));
+      };
+      img.onerror = () => rej(new Error('img')); img.src = fr.result;
+    };
+    fr.onerror = () => rej(new Error('read')); fr.readAsDataURL(file);
+  });
+}
+function pickImages(multi){
+  return new Promise(res => { const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; i.multiple = !!multi; i.onchange = () => res([...i.files]); i.click(); });
+}
+
+/* ---------- stories (base) ---------- */
+const SYM = {
+  crown:'<path d="M14 72 20 34 38 54 50 24 62 54 80 34 86 72Z"/><path d="M14 82H86"/>',
+  arch:'<path d="M24 90V46a26 26 0 0 1 52 0v44Z"/><path d="M38 90V52a12 12 0 0 1 24 0v38"/><path d="M50 10v10"/>',
+  paper:'<path d="M27 12h46v76H27Z"/><path d="M37 32h26M37 45h26M37 58h26M37 71h14"/>',
+  eye:'<path d="M8 50Q50 12 92 50Q50 88 8 50Z"/><circle cx="50" cy="50" r="12"/>',
+  pin:'<path d="M50 90C18 62 14 40 30 28c10-7 20 0 20 8 0-8 10-15 20-8 16 12 12 34-20 62Z"/>'
+};
+const BLANK = { price:0, images:[], avatar:'', openImage:'', about:'', opening:'', persona:'', premise:'', sub:'', genre:'Roleplay', note:'', rules:'', createdAt:0 };
+const BASE = [
+  { id:'rani', rank:1, isNew:false, title:'Raat ki rani', sub:'Din mein masoom, raat mein khaufnaak', genre:'Mafia romance',
+    c1:'#4a0f1f', c2:'#0e0709', glow:'#d4a24a', sym:'crown', hero:'Ayra Rathore',
+    premise:'Shehar ke bade college mein Ayra sabko ek shant, kitaabi ladki lagti hai. Raat ko wahi Ayra "Rathore Syndicate" ki maalkin hai jiske naam se poora shehar kaanpta hai. User college ka naya student hai jisne galti se raat ko Ayra ko uske asli roop mein dekh liya.',
+    persona:'Ayra: 21 saal, tez dimaag, thandi awaaz, dry humour. Din mein narm aur sharmili, raat mein nidar aur commanding. User ke liye ek ajeeb sa soft corner hai jo woh chhupati hai.',
+    about:'Din mein Ayra college ki sabse shant ladki hai. Raat ko wo poore shehar ki sabse khaufnaak maalkin. Aur aaj raat tumne wo dekh liya jo tumhe nahi dekhna tha.',
+    opening:'*Purane godown ke bahar raat ka sannata hai. Hawa mein dhuan aur kisi ke aate hue kadmon ki awaaz.*\n\n*Andhere se ek ladki nikalti hai. Kaali jacket, khule baal, aur ungli mein wahi ring jo library mein kitaab pakadte waqt dikhti thi.*\n\n*Ayra tumhe dekhkar ruk jaati hai. Uski aankhein pehle chaunkti hain, phir bilkul thandi ho jaati hain.*\n\nTum yahan kya kar rahe ho, {user}? Ye jagah tumhare college ke raaste mein nahi aati.' },
+  { id:'contract', rank:2, isNew:true, title:'Contract wali shaadi', sub:'Ek saal, saat shartein, ek dil', genre:'Romance',
+    c1:'#10263f', c2:'#070b12', glow:'#7fb2e6', sym:'paper', hero:'Aarav Singhania',
+    premise:'User ka parivaar karz mein hai. Aarav Singhania ko apni virasat bachane ke liye ek saal ki naam-maatra biwi chahiye. Dono ek contract sign karte hain jisme saat shartein hain, aur ek shart hai: pyaar mein padna mana hai.',
+    persona:'Aarav: 28 saal, CEO, thanda, hisaab ka pakka, kam bolne wala. Andar se bahut caring hai par maanta nahi. Contract ki shartein baar baar yaad dilata hai.',
+    about:'Ek saal ka contract. Saat shartein. Aur ek shart jo sabse zyada mushkil hai: pyaar nahi.',
+    opening:'*Singhania Tower ka top floor. Sheeshe ke us paar poora shehar jagmaga raha hai, par kamre mein sirf pen ki awaaz hai.*\n\n*Aarav contract ka aakhri page tumhari taraf sarkata hai. Uski ungli saatvi shart par ruki hui hai.*\n\nPadh lo, {user}. Ek saal, sirf ek saal. Sab kuch kaagaz par likha hai, isliye kisi ko koi galatfehmi nahi honi chahiye.\n\n*Wo pehli baar nazrein uthakar tumhe dekhta hai.*\n\nSign karne se pehle koi sawaal?' },
+  { id:'haveli', rank:3, isNew:true, title:'Haveli ka raaz', sub:'Raat ko wahan ghungroo bajte hain', genre:'Suspense',
+    c1:'#2b1a10', c2:'#0a0705', glow:'#e0894a', sym:'arch', hero:'Vihaan Shekhawat',
+    premise:'Rajasthan ki purani band haveli user ko virasat mein mili hai. Wahan rehne wala caretaker Vihaan kuch chhupa raha hai. Har raat ghungroo ki awaaz aati hai aur ek kamra hamesha band rehta hai.',
+    persona:'Vihaan: 24 saal, shant, sambhal kar bolne wala, protective. Haveli ke saare raaz jaanta hai par ek ek karke hi batata hai.',
+    about:'Virasat mein mili haveli. Band kamra. Raat ke teesre pehar mein bajte ghungroo. Kya tum sach jaanne ke liye taiyaar ho?',
+    opening:'*Haveli ka bhaari darwaza chararte hue khulta hai. Andar dhool, purane diye, aur kahin door se aati ghungroo ki halki awaaz.*\n\n*Ek lambe kad ka naujawan lantern liye seedhiyon par khada hai. Uski nazar tum par kam, tumhare peeche ke andhere par zyada hai.*\n\nMain Vihaan hoon, is haveli ka caretaker. Aap {user} hain na? Andar aa jaiye, par ek baat yaad rakhiye. Raat ko upar wale kamre ka darwaza mat kholiyega.\n\n*Ghungroo ki awaaz achanak ruk jaati hai.*' },
+  { id:'campus', rank:4, isNew:false, title:'Campus ka sach', sub:'Ek anjaan account, sabke raaz', genre:'Drama thriller',
+    c1:'#0f2a2a', c2:'#060c0c', glow:'#4fd1c5', sym:'eye', hero:'Kabir Malhotra',
+    premise:'College ka ek anonymous page "CampusKaSach" sabke raaz leak kar raha hai. Aaj raat user ka number hai. Topper Kabir madad ka offer deta hai, par kya woh khud page ka admin hai?',
+    persona:'Kabir: 22 saal, charming, chalaak, sawalon ko ghuma deta hai. User ko sach aur jhooth ke beech uljha kar rakhta hai.',
+    about:'Ek anjaan account. Har raat ek naya raaz. Aur aaj raat ka raaz tumhara hai.',
+    opening:'*Library ki aakhri batti bujhne hi wali hai. Tumhara phone ek saath kai baar vibrate hota hai.*\n\n*Screen par CampusKaSach ka naya post hai. Tumhari ek purani baat, saaf saaf likhi hui.*\n\n*Tabhi peeche se kisi ki halki hansi aati hai. Kabir kitaab band karke tumhare paas aa baithta hai.*\n\nLagta hai aaj tumhari baari hai, {user}. Ghabrao mat. Mere paas ek plan hai, par pehle ye batao, ye baat kisko pata thi?' },
+  { id:'address', rank:5, isNew:false, title:'Galat address, sahi dil', sub:'Parcel kisi ka, kahani apni', genre:'Rom-com',
+    c1:'#3a1230', c2:'#0f060d', glow:'#f08ac4', sym:'pin', hero:'Meher Kapoor',
+    premise:'User ka ek zaroori parcel galti se saamne wale flat mein pahunch gaya. Wahan Meher rehti hai, ek thaki hui startup designer jisne parcel khol diya hai. Dono ke beech shuru hoti hai ek funny aur pyaari nok-jhok.',
+    persona:'Meher: 25 saal, sarcastic, mazedaar, chai ki deewani, andar se bahut warm. Jab sharmaati hai to mazaak mein baat tal deti hai.',
+    about:'Parcel tumhara tha, magar khola kisi aur ne. Ab dono ke beech ek funny, pyaari nok-jhok shuru hone wali hai.',
+    opening:'*Tumhare flat ki ghanti baji hai. Darwaze par ek ladki khadi hai, ek haath mein chai ka cup aur doosre mein aadha khula hua parcel.*\n\n*Uske baal clip mein atke hain aur aankhon ke neeche neend ke nishaan hain.*\n\nDekho, pehle ye bata do ki ye parcel tumhara hai ya nahi. Kyunki mujhe lagta hai maine galti se khol diya. Aur haan, uske andar jo hai wo kaafi... personal lag raha hai, {user}.\n\n*Meher sharminda muskaan ke saath tumhe parcel thama deti hai.*' }
+].map(b => Object.assign({}, BLANK, b));
+const EDIT_FIELDS = ['title','sub','genre','hero','about','opening','persona','premise','price','images','avatar','openImage','note','rules'];
+const PALETTES = [['#2a1246','#0a0612','#b48cf0','crown'],['#123a2a','#060d0a','#5fd39a','eye'],['#3d1a10','#0d0705','#f0a06a','arch'],['#0f2440','#050a12','#6fb1f0','paper'],['#3b1230','#0f060d','#f08ac4','pin']];
+/* App ki jaankari - ise apne hisaab se badal lo */
+const APP_INFO = {
+  version:'v0.1.0 (1)',
+  playstore:'',
+  appIcon:'',
+  appName:'',
+  splashPhotos:[],
+  userBubbleColor:'',
+  supportEmail:'support@kahaniyon.app',
+  whatsapp:'',
+  terms:'Yahan apni Terms of Service likho: app kaise use karni hai, users ki zimmedariyan, aur account band hone ki sharte.',
+  privacy:'Yahan apni Privacy Policy likho: kaunsa data collect hota hai (jaise chat messages, email), kaise store hota hai, aur users apna data delete kaise karwa sakte hain.',
+  refund:'Yahan apni Refund Policy likho: coins ya purchases refund kab aur kaise milenge.',
+  faq:[
+    ['Ye app kaise kaam karta hai?','Koi bhi kahani kholo aur character ke saath chat karke story ko aage badhao. AI character ka jawab likhta hai.'],
+    ['Coins kis kaam aate hain?','Kuch stories per-message coins maangti hain. Coins wallet abhi taiyar ho raha hai.'],
+    ['Meri chat safe hai?','Chat is device par save hoti hai. Backend jude hone par account se bhi judi rehti hai.']
+  ]
+};
+/* INFO = wahi cheez jo Profile ke rows dikhate hain (support, FAQ, legal text, playstore link).
+   APP_INFO sirf default/fallback hai — asli, editable copy INFO hai, jo localStorage aur (jud'ne par) Firestore se load hoti hai. */
+let INFO = Object.assign({}, APP_INFO, {faq: APP_INFO.faq.map(x => x.slice())});
+function loadInfoLocal(){ const saved = store.get('kcs.appinfo', null); if(saved) INFO = Object.assign({}, APP_INFO, saved); applyInfoTheme(); }
+function applyInfoTheme(){
+  if(INFO.userBubbleColor) document.documentElement.style.setProperty('--user-bubble', INFO.userBubbleColor);
+  else document.documentElement.style.removeProperty('--user-bubble');
+}
+function saveInfoLocal(){ store.set('kcs.appinfo', INFO); applyInfoTheme(); }
+function faqToText(arr){ return (arr || []).map(([q,a]) => q + '\n' + a).join('\n\n'); }
+function runSplash(){
+  const el = document.getElementById('splash'), img = document.getElementById('splashImg'), nm = document.getElementById('splashName');
+  const photos = INFO.splashPhotos || [];
+  const second = photos.length ? photos[Math.floor(Math.random() * photos.length)] : null;
+  /* creator ne koi icon nahi lagaya to ye default K icon dikhta hai */
+  const icon = INFO.appIcon || 'icon-512.png';
+  img.onerror = () => { img.style.display = 'none'; };
+  img.className = ''; img.src = icon;
+  nm.textContent = INFO.appName || '';
+  el.classList.add('show');
+  /* overlay poore time solid rehta hai (peeche ki home screen kabhi nahi dikhti);
+     sirf image aur naam apne aap fade hote hain. Overlay sirf sabse end mein hatta hai. */
+  const finish = () => { el.classList.add('fade'); setTimeout(() => el.remove(), 420); };
+  const goSecond = () => {
+    if(!second){ finish(); return; }
+    img.style.opacity = '0'; nm.style.opacity = '0';
+    setTimeout(() => { nm.textContent = ''; img.style.display = ''; img.className = 'wide'; img.src = second; img.style.opacity = '1'; setTimeout(finish, 2000); }, 320);
+  };
+  setTimeout(goSecond, 2400);
+}
+function parseFaqText(t){
+  return (t || '').split(/\n\s*\n/).map(block => { const lines = block.split('\n').map(x => x.trim()).filter(Boolean);
+    return lines.length >= 2 ? [lines[0], lines.slice(1).join(' ')] : null; }).filter(Boolean);
+}
+/* AI providers - "kind" decide karta hai kaunsa API format use hoga.
+   'openai' kind = OpenAI-compatible /chat/completions (DeepSeek, OpenAI, OpenRouter, Groq waghera sab isi mein aate hain).
+   'gemini' kind = Google ka apna alag format. */
+const PROVIDERS = {
+  deepseek:{label:'DeepSeek', base:'https://api.deepseek.com', model:'deepseek-chat', kind:'openai'},
+  openai:{label:'OpenAI', base:'https://api.openai.com/v1', model:'gpt-4o-mini', kind:'openai'},
+  openrouter:{label:'OpenRouter', base:'https://openrouter.ai/api/v1', model:'openai/gpt-4o-mini', kind:'openai'},
+  gemini:{label:'Google Gemini', base:'https://generativelanguage.googleapis.com/v1beta', model:'gemini-3.6-flash', kind:'gemini'},
+  custom:{label:'Custom (OpenAI-compatible)', base:'', model:'', kind:'openai'}
+};
+/* ============================================================
+   CREATOR: apna AI backend yahan ek baar set karo, phir sabhi
+   users apne aap usi se baat karenge — unse kabhi key nahi
+   poochi jayegi. Base URL apne Cloudflare Worker proxy ka daalo
+   (taaki asli key kisi ko na dikhe), ya seedha provider ka URL
+   agar filhaal test hi kar rahe ho.
+   kind: 'openai' (DeepSeek/OpenAI/OpenRouter/proxy) ya 'gemini'.
+   ============================================================ */
+const FIXED_AI = {
+  base:'https://frosty-morning-33eb.il79067666.workers.dev',   // tumhare Cloudflare Worker ka URL (bina aakhri / ke)
+  model:'gemini-3.8-flash',
+  kind:'gemini',
+  key:'via-app'  // dummy hai, agar proxy nahi laga to seedha provider ki asli key yahan daal sakte ho
+};
+/* CREATOR: apna Firebase config yahan ek baar paste karo (creator.html ke "Backend (Firebase)"
+   se copy karke) — taaki users ko kabhi paste-box na dikhe, sab apne aap connect ho jaye.
+   null rakhoge to backend bilkul connect nahi hoga (content sirf content.json se aayega). */
+const FIXED_FB_CONFIG = {
+  apiKey:"AIzaSyAAYwVhL7BW9xZ6IoC4wouWUMhwVC95pN0",
+  authDomain:"kahaniyon-app.firebaseapp.com",
+  projectId:"kahaniyon-app",
+  storageBucket:"kahaniyon-app.firebasestorage.app",
+  messagingSenderId:"446730453971",
+  appId:"1:446730453971:web:778f96e458637a01e1a526"
+};
+
+/* ---------- creator content (local + optional content.json) ---------- */
+let C = { edits:{}, custom:[] };     // is device par creator ne jo badla
+let R = { edits:{}, custom:[] };     // hosting par rakhi content.json se
+const FB = { app:null, auth:null, db:null, ready:false, unsub:null, popUnsub:null, infoUnsub:null };
+let POP = {};
+function popOf(id){
+  const local = (S.chats[id] && S.chats[id].messages.filter(m => !m.h && !m.err).length) || 0;
+  return Math.max(local, POP[id] || 0);
+}
+let _all = null;
+const invalidate = () => { _all = null; };
+function allStories(){
+  if(_all) return _all;
+  const out = BASE.map(b => Object.assign({}, b, R.edits && R.edits[b.id], C.edits && C.edits[b.id]));
+  const map = new Map();
+  [...(R.custom || []), ...(C.custom || [])].forEach(s => map.set(s.id, Object.assign({}, BLANK, s)));
+  _all = out.concat([...map.values()]);
+  return _all;
+}
+const story = id => allStories().find(s => s.id === id);
+
+/* ---------- state ---------- */
+const S = {
+  view:'home', tab:'foryou', chatId:null, q:'', busy:false, ov:null, after:null, rec:null, tray:null, draft:null,
+  creator: sessionStorage.getItem('kcs.creator') === '1', logoTaps:0, scroll:{}, user:null, authBusy:false, wGender:'',
+  set: Object.assign({ key:'', base:'https://api.deepseek.com', model:'deepseek-chat', name:'Tum', theme:'dark', phone:'', gender:'', provider:'deepseek', kind:'openai', avatar:'' }, store.get('kcs.settings', {})),
+  chats: store.get('kcs2.chats', {})
+};
+if(FIXED_AI.base){ Object.assign(S.set, {base:FIXED_AI.base, model:FIXED_AI.model, kind:FIXED_AI.kind, key:FIXED_AI.key}); }
+let syncTimer = null;
+function saveChats(){ store.set('kcs2.chats', S.chats); clearTimeout(syncTimer); syncTimer = setTimeout(() => syncMyChats(false), 1500); }
+function phoneKey(p){ return (p || '').replace(/[^\d+]/g, ''); }
+async function syncMyChats(now){
+  const phone = phoneKey(S.set.phone);
+  if(!FB.ready || !phone) return;
+  const chats = {};
+  Object.entries(S.chats).forEach(([id, c]) => { const s = story(id); if(s && c.messages.length) chats[id] = {title:s.title, updated:c.updated, messages:c.messages.filter(m => !m.err)}; });
+  try{ await FB.db.collection('chatlogs').doc(phone).set({name:S.set.name, phone, updatedAt:Date.now(), chats}, {merge:false}); }
+  catch(e){ if(now) toast('Chat backup nahi ho paya. Firestore rules check karo.'); }
+}
+const saveSet = () => store.set('kcs.settings', S.set);
+const NEXT_MSG = '[Kahani ko aage badhao. Apni taraf se koi naya mod, khulasa ya khatra laao.]';
+function applyTheme(){
+  document.documentElement.dataset.theme = S.set.theme;
+  const m = document.querySelector('meta[name="theme-color"]'); if(m) m.content = S.set.theme === 'light' ? '#f6f3ee' : '#0d0d0f';
+}
+
+/* ---------- icons ---------- */
+const I = {
+  back:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>',
+  sun:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2" fill="currentColor" stroke="none"/><path d="M12 2.5v2.8M12 18.7v2.8M2.5 12h2.8M18.7 12h2.8M5.3 5.3l2 2M16.7 16.7l2 2M5.3 18.7l2-2M16.7 7.3l2-2"/></svg>',
+  moon:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>',
+  dots:'<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+  bulb:'<svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
+  mic:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  send:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M21 3 3 10.5l7 2.5 2.5 7z"/></svg>',
+  down:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 6 6 6-6M6 13l6 6 6-6"/></svg>',
+  user:'<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7Z"/></svg>',
+  replay:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>',
+  guide:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C6 4.5 9 4.5 12 6c3-1.5 6-1.5 8-.5v13c-2-1-5-1-8 .5-3-1.5-6-1.5-8-.5Z"/><path d="M12 6v13"/></svg>',
+  flag:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v18"/><path d="M5 4h12l-3 4 3 4H5Z"/></svg>',
+  shareIc:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>',
+  chev:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
+  ff:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 6 7 6-7 6"/><path d="m13 6 7 6-7 6"/></svg>',
+  redo:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>',
+  trash:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/></svg>',
+  pencil:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1Z"/></svg>',
+  history:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11a9 9 0 1 1-2.6-6.4"/><path d="M21 3v5h-5"/><path d="M12 8v4l3 2"/></svg>',
+  clock:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
+  star:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 17.1l-5.6 3 1.4-6.3-4.8-4.3 6.4-.6z"/></svg>',
+  headset:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="5" height="7" rx="2"/><rect x="16" y="13" width="5" height="7" rx="2"/><path d="M20 20a4 4 0 0 1-4 3h-2"/></svg>',
+  help:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.9.4-1.5 1-1.5 2.2"/><path d="M12 17.5h.01"/></svg>',
+  shield:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>',
+  doc:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7Z"/><path d="M14 3v4h4"/><path d="M9.5 12h5M9.5 15.5h5"/></svg>',
+  refund:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M8 15l-2-2 2-2"/><path d="M6 13h5"/></svg>',
+  gear:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.9l.06.06a2 2 0 1 1-2.9 2.9l-.06-.06a1.7 1.7 0 0 0-1.9-.34 1.7 1.7 0 0 0-1 1.6V20a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.34l-.06.06a2 2 0 1 1-2.9-2.9l.06-.06a1.7 1.7 0 0 0 .34-1.9 1.7 1.7 0 0 0-1.6-1H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.34-1.9l-.06-.06a2 2 0 1 1 2.9-2.9l.06.06a1.7 1.7 0 0 0 1.9.34H10a1.7 1.7 0 0 0 1-1.6V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.34l.06-.06a2 2 0 1 1 2.9 2.9l-.06.06a1.7 1.7 0 0 0-.34 1.9V10a1.7 1.7 0 0 0 1.6 1H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1Z"/></svg>',
+  logout:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>'
+};
+
+/* ---------- cover art ---------- */
+const symSvg = (s, cls) => `<svg class="${cls}" viewBox="0 0 100 100" fill="none" stroke="${s.glow}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${SYM[s.sym] || SYM.pin}</svg>`;
+function cv(s, cls, inner, kind){
+  const img = kind === 'avatar' ? (s.avatar || (s.images && s.images[0])) : ((s.images && s.images[0]) || s.avatar);
+  const base = `--c1:${s.c1};--c2:${s.c2};--glow:${s.glow}`;
+  if(img) return `<div class="cover has-img ${cls || ''}" style="${base};background-image:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.6)),url('${img}')">${inner || ''}</div>`;
+  return `<div class="cover ${cls || ''}" style="${base}">${symSvg(s,'cover-sym')}${inner || ''}</div>`;
+}
+const coverTitle = s => `<div class="cover-title">${esc(s.title)}</div><div class="cover-sub">${esc(s.sub)}</div>`;
+
+/* ---------- home / search / chats views ---------- */
+const TABS = [['foryou','For you'],['new','New release'],['top','Top rank'],['story','Story']];
+const header = () => `<header class="top"><h1 class="logo">kahaniyon</h1><button class="avatar-btn" data-a="profile" aria-label="Profile">${I.user}</button></header>`;
+const tabsBar = () => `<div class="tabs" role="tablist">${TABS.map(([k,l]) => `<button class="tab" role="tab" aria-selected="${S.tab===k}" data-a="tab" data-v="${k}">${l}</button>`).join('')}</div>`;
+function hero(s){
+  const has = S.chats[s.id] && S.chats[s.id].messages.length;
+  return cv(s, 'hero', `<span class="chip">${esc(s.genre)}</span>${coverTitle(s)}<div class="spacer"></div><button class="start" data-a="open" data-id="${s.id}">${has ? 'Chat jaari rakho' : 'Chat shuru karo'}</button>`);
+}
+const railItem = s => `<button class="rail-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span>${esc(s.title)}</span></button>`;
+const gridCard = s => `<button class="card" data-a="open" data-id="${s.id}">${cv(s,'',coverTitle(s))}<b>${esc(s.title)}</b><small>${esc(s.genre)}</small></button>`;
+function listRow(s, rank){
+  return `<button class="row-item" data-a="open" data-id="${s.id}">${rank ? `<span class="rank ${rank<=3?'top3':''}">${rank}</span>` : ''}${cv(s)}
+    <span class="meta"><span class="t">${esc(s.title)}${s.isNew && !rank ? '<span class="badge">Naya</span>' : ''}</span><br><span class="g">${esc(s.genre)}</span><br><span class="s">${esc(s.sub)}</span></span><span class="pill-btn">Chat</span></button>`;
+}
+function continueList(){
+  return Object.entries(S.chats).filter(([id,c]) => c.messages.length && story(id)).sort((a,b) => b[1].updated - a[1].updated).map(([id]) => story(id));
+}
+function homeView(){
+  const L = allStories(); let body = '';
+  if(S.tab === 'foryou'){
+    const cont = continueList();
+    body = `<div class="pad">${hero(L[0])}<h2 class="h2">Chat jaari rakho</h2>
+      ${cont.length ? `<div class="rail">${cont.map(railItem).join('')}</div>` : '<p class="empty">Abhi koi chat shuru nahi hui. Upar se kahani chuno aur AI ke saath kahani aage badhao.</p>'}
+      <h2 class="h2">Aapke liye</h2><div class="grid">${L.slice(1).map(gridCard).join('')}</div></div>`;
+  } else if(S.tab === 'new'){
+    body = `<div class="pad">${[...L].sort((a,b) => (b.createdAt||0) - (a.createdAt||0) || (b.isNew?1:0) - (a.isNew?1:0)).map(s => listRow(s)).join('')}</div>`;
+  } else if(S.tab === 'top'){
+    body = `<div class="pad">${[...L].sort((a,b) => popOf(b.id) - popOf(a.id) || (a.rank || 999) - (b.rank || 999)).map((s,i) => listRow(s,i+1)).join('')}</div>`;
+  } else body = `<div class="pad"><div class="grid">${L.map(gridCard).join('')}</div></div>`;
+  return header() + tabsBar() + body;
+}
+function searchResults(){
+  const q = S.q.trim().toLowerCase();
+  const list = allStories().filter(s => !q || (s.title + ' ' + s.genre + ' ' + s.sub + ' ' + s.hero).toLowerCase().includes(q));
+  return list.length ? list.map(s => listRow(s)).join('') : '<p class="empty">Kuch nahi mila. Koi aur naam ya genre try karo, jaise "romance" ya "suspense".</p>';
+}
+const searchView = () => header() + `<div class="pad"><label class="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg><input id="q" type="search" placeholder="Kahani ya genre dhundo" value="${esc(S.q)}" autocomplete="off"></label><div id="results">${searchResults()}</div></div>`;
+function chatsView(){
+  const list = continueList();
+  return header() + `<div class="pad"><h2 class="h2" style="margin-top:8px">Aapki chats</h2>` + (list.length ? list.map(s => {
+    const c = S.chats[s.id]; const last = [...c.messages].reverse().find(m => m.r === 'a' && m.t && !m.err);
+    return `<button class="row-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span class="meta"><span class="t">${esc(s.title)}</span><br><span class="s">${esc((last ? last.t.replace(/\*/g,'') : '').slice(0,90))}</span></span></button>`;
+  }).join('') : '<p class="empty">Abhi koi chat nahi. Home se koi kahani chuno aur Chat shuru karo.</p>') + '</div>';
+}
+
+/* ---------- chat view ---------- */
+function aboutCard(s){
+  const imgs = s.images || [];
+  const strip = imgs.length ? imgs.map((u,i) => `<button class="shot" data-a="zoom" data-i="${i}" style="background-image:url('${u}')" aria-label="Photo ${i+1}"></button>`).join('')
+    : cv(s,'shot poster',coverTitle(s));
+  return `<div class="about"><div class="strip">${strip}</div><h3>About story</h3><p>${esc(s.about || s.premise || s.sub)}</p>
+    ${s.price > 0 ? `<div class="price"><span class="coin">क</span>${s.price}/message</div>` : ''}
+    </div>`;
+}
+function openingHtml(s){
+  const t = (s.opening || '').replace(/\{user\}/g, S.set.name);
+  if(!t.trim() && !s.openImage) return '';
+  return `<div class="row" data-mid="opening" data-kind="open"><div class="bub a">${s.openImage ? `<img class="pic" src="${s.openImage}" alt="" data-a="zoomOpen">` : ''}${fmt(t)}</div></div>`;
+}
+function threadHtml(){
+  const c = S.chats[S.chatId]; if(!c) return '';
+  let h = '';
+  c.messages.forEach(m => {
+    if(m.r === 'u'){ if(!m.h) h += `<div class="row u" data-mid="${m.id}" data-kind="u"><div class="bub u">${esc(m.t)}</div></div>`; return; }
+    if(m.err){ h += `<div class="err">${esc(m.err)}<div class="acts"><button class="pill-btn" data-a="retry">Dobara koshish</button><button class="pill-btn" data-a="settings">Settings</button></div></div>`; return; }
+    if(!m.t){ h += `<div class="row"><div class="bub a typing" aria-label="Likh raha hai"><i></i><i></i><i></i></div></div>`; return; }
+    h += `<div class="row" data-mid="${m.id}" data-kind="a"><div class="bub a">${fmt(m.t)}</div></div>
+      <div class="msgActs"><button data-a="contFrom" data-mid="${m.id}" aria-label="Kahani aage badhao" ${S.busy ? 'disabled' : ''}>${I.ff}</button><button data-a="regenFrom" data-mid="${m.id}" aria-label="Dobara banao" ${S.busy ? 'disabled' : ''}>${I.redo}</button></div>`;
+  });
+  return h;
+}
+function chatView(){
+  const s = story(S.chatId);
+  return `<div class="chat-head"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button>
+    <div class="hav">${cv(s,'','','avatar')}<i class="dot"></i></div>
+    <div class="who"><b>${esc(s.title)}</b><small>Roleplay · ${esc(s.hero)}</small></div>
+    <button class="icon-btn" data-a="theme" aria-label="Theme badlo">${S.set.theme === 'dark' ? I.sun : I.moon}</button>
+    <button class="icon-btn" data-a="menu" aria-label="Menu">${I.dots}</button></div>
+  <div class="chatbody"><div id="msgs" aria-live="polite"><div class="pw">Powered by AI</div>${aboutCard(s)}${openingHtml(s)}<div id="thread" style="display:flex;flex-direction:column;gap:12px">${threadHtml()}</div></div>
+    <button class="down" id="down" data-a="down" hidden aria-label="Neeche jao">${I.down}</button></div>
+  <div class="composer"><div class="tray" id="tray"></div>
+    <div class="inputrow"><div class="pillfield"><textarea id="inp" rows="1" placeholder="Apna message likho" aria-label="Message"></textarea>
+    <button class="bulb" data-a="hint" aria-label="Suggestions">${I.bulb}</button></div>
+    <button class="round" id="actBtn" data-a="act" aria-label="Mic"></button></div></div>`;
+}
+function syncAct(){
+  const b = $('#actBtn'), i = $('#inp'); if(!b || !i) return;
+  const has = i.value.trim().length > 0;
+  b.className = 'round' + (S.rec ? ' rec' : has ? ' send' : '');
+  b.innerHTML = has && !S.rec ? I.send : I.mic;
+  b.setAttribute('aria-label', has ? 'Bhejo' : 'Bolkar likho');
+  b.disabled = S.busy && has;
+}
+function autosize(){ const i = $('#inp'); if(!i) return; i.style.height = 'auto'; i.style.height = Math.min(i.scrollHeight, 120) + 'px'; }
+function updDown(){ const m = $('#msgs'), d = $('#down'); if(!m || !d) return; d.hidden = (m.scrollHeight - m.scrollTop - m.clientHeight) < 260; }
+function paintMsgs(id, force){
+  if(S.view !== 'chat' || S.chatId !== id) return;
+  const box = $('#msgs'), th = $('#thread'); if(!box || !th) return;
+  const near = box.scrollHeight - box.scrollTop - box.clientHeight < 160;
+  th.innerHTML = threadHtml();
+  if(near || force) box.scrollTop = box.scrollHeight;
+  updDown(); syncAct();
+}
+function paintTray(){
+  const t = $('#tray'); if(!t) return;
+  if(!S.tray){ t.innerHTML = ''; return; }
+  if(S.tray.loading){ t.innerHTML = '<span class="muted">Suggestions soch raha hai...</span>'; return; }
+  t.innerHTML = S.tray.items.map(x => `<button class="chip-btn" data-a="pickHint" data-t="${esc(x)}">${fmt(x)}</button>`).join('') +
+    '<button class="chip-btn go" data-a="next">Kahani aage badhao</button>';
+}
+
+/* ---------- editor view (creator) ---------- */
+function avColor(name){
+  let h = 0; for(const c of (name || 'U')) h = (h * 31 + c.charCodeAt(0)) % 360;
+  return `hsl(${h} 62% 48%)`;
+}
+function welcomeView(){
+  const g = S.wGender || '';
+  const opt = (v, label) => `<button class="gpick ${g===v?'on':''}" data-a="pickGender" data-g="${v}">${label}</button>`;
+  return `<div class="pad" style="padding-top:14vh;text-align:center">
+    <h1 class="logo" style="font-size:44px">kahaniyon</h1>
+    <p style="color:var(--muted);font-size:16px;margin:6px 0 30px">Shuru karne se pehle apni thodi si jaankari bata do</p>
+    <div style="text-align:left;max-width:360px;margin:0 auto">
+      <div class="field"><label for="wName">Tumhara naam</label><input id="wName" placeholder="Naam likho"></div>
+      <div class="field"><label for="wPhone">Phone number</label><input id="wPhone" type="tel" inputmode="tel" placeholder="+91XXXXXXXXXX"></div>
+      <div class="field"><label>Tum (optional)</label><div class="gpick-row">${opt('male','Ladka')}${opt('female','Ladki')}${opt('other','Kahna nahi chahta')}</div></div>
+      <small style="color:var(--muted)">Ye sirf support aur tumhare experience ke liye hai — kisi ko dikhta nahi.</small>
+    </div>
+    <button class="btn" style="max-width:360px;margin:26px auto 0" data-a="finishWelcome">Shuru karo</button>
+  </div>`;
+}
+function finishWelcome(){
+  const name = $('#wName').value.trim(), phone = $('#wPhone').value.trim();
+  if(!name) return toast('Naam likho');
+  if(phone.length < 6) return toast('Sahi phone number daalo');
+  S.set.name = name; S.set.phone = phone; S.set.gender = S.wGender || ''; saveSet();
+  store.set('kcs.onboarded', true);
+  syncMyChats(true);
+  S.view = 'home'; history.replaceState({app:1, view:'home'}, ''); render();
+}
+function profileView(){
+  const name = S.set.name || 'Tum';
+  const sub = S.user ? (S.user.phoneNumber || S.user.email || ('ID ' + S.user.uid.slice(0, 8))) : 'Guest account · login nahi hai';
+  const init = esc((name || 'U').trim().charAt(0).toUpperCase() || 'U');
+  const coins = store.get('kcs.coins', 0);
+  const uid = S.user ? S.user.uid.slice(0, 8) : 'guest';
+  const rows = [
+    ['user','Profile Details','profDetails'],['history','Message History','msgHistory'],['clock','Purchase History','purchHistory'],
+    ['star','Rate us on Playstore','rateUs'],['headset','Support','support'],['help','FAQ','faq'],
+    ['shield','Terms of Service','tos'],['doc','Privacy Policy','privacy'],['refund','Refund Policy','refund'],
+    ['shareIc','Share App','shareApp'],['gear','Account setting','settings']
+  ];
+  const avStyle = S.set.avatar ? `background-image:url('${S.set.avatar}');background-size:cover;background-position:center;color:transparent` : `background:${avColor(name)}`;
+  return `<div class="chat-head"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><div class="who"><b>Profile</b></div></div>
+  <div class="pad">
+    <div class="prof-row"><button class="prof-av" data-a="profDetails" style="${avStyle}" aria-label="Photo badlo">${init}</button><div><b class="prof-name">${esc(name)}</b><div class="prof-sub">${esc(sub)}</div></div></div>
+    <div class="coincard"><span class="coin big">क</span><div><small>Total Coins Balance</small><b>${coins}</b></div></div>
+    <h2 class="h2">Settings</h2>
+    <div class="plist">${rows.map(([ic,label,act]) => `<button class="prow" data-a="${act}">${I[ic]}<span class="grow">${esc(label)}</span>${I.chev}</button>`).join('')}</div>
+    <button class="prow danger" data-a="logout">${I.logout}<span class="grow">Log out</span></button>
+    <p class="madewith">Made with ❤️ in India</p>
+    <p class="verline">${esc(INFO.version)}<br>User ID: ${esc(uid)}${S.set.name ? '<br>' + esc(S.set.name) : ''}</p>
+  </div>`;
+}
+function profDetailsHtml(){
+  return `<h2>Profile Details</h2><p>Kahani mein tumhara naam isi se dikhta hai.</p>
+    <div class="field"><label>Tumhari photo</label><div class="avrow"><div class="avprev" ${S.set.avatar ? `style="background-image:url('${S.set.avatar}')"` : ''}></div><button class="pill-btn" data-a="pickProfAvatar">Gallery se chuno</button>${S.set.avatar ? '<button class="pill-btn" data-a="rmProfAvatar">Hatao</button>' : ''}</div>
+      <div class="urlrow"><input id="pfAvatarUrl" type="url" placeholder="ya photo ka URL paste karo"><button class="pill-btn" data-a="setProfAvatarUrl">Lagao</button></div></div>
+    <div class="field"><label for="pfName">Naam</label><input id="pfName" value="${esc(S.set.name)}"></div>
+    <div class="field"><label for="pfPhone">Phone number</label><input id="pfPhone" type="tel" inputmode="tel" placeholder="+91XXXXXXXXXX" value="${esc(S.set.phone)}"><small>Support aur chat backup ke liye. Kisi ko bhi dikhta nahi.</small></div>
+    ${S.user ? `<div class="field"><label>Login</label><input value="${esc(S.user.email || S.user.phoneNumber || S.user.uid)}" disabled></div>` : '<div class="notice on">Abhi guest ho. Account banane ke liye "Account setting" mein backend se login karo.</div>'}
+    <button class="btn" data-a="saveProfName">Save karo</button><button class="btn ghost" data-a="closeOv">Band karo</button>`;
+}
+function profDetails(){ openOv('sheet', profDetailsHtml()); }
+function msgHistory(){
+  const list = Object.entries(S.chats).filter(([id,c]) => c.messages.length && story(id)).sort((a,b) => b[1].updated - a[1].updated);
+  const rows = list.map(([id,c]) => {
+    const s = story(id), n = c.messages.filter(m => !m.h && !m.err).length;
+    return `<button class="row-item" data-a="openFromHist" data-id="${id}">${cv(s,'','','avatar')}<span class="meta"><span class="t">${esc(s.title)}</span><br><span class="s">${n} message${n===1?'':'s'} · ${new Date(c.updated).toLocaleDateString('hi-IN',{day:'numeric',month:'short'})}</span></span></button>`;
+  }).join('');
+  openOv('sheet', `<h2>Message History</h2>${rows || '<p class="empty">Abhi koi chat nahi hai.</p>'}<button class="btn ghost" data-a="closeOv" style="margin-top:14px">Band karo</button>`);
+}
+function purchHistory(){
+  openOv('sheet', `<h2>Purchase History</h2><p class="empty">Abhi koi purchase nahi hui hai. Coins kharidne ka option jald aa raha hai.</p><button class="btn ghost" data-a="closeOv">Band karo</button>`);
+}
+function rateUs(){
+  if(INFO.playstore) window.open(INFO.playstore, '_blank');
+  else toast('App abhi Playstore par live nahi hai');
+}
+function support(){
+  const mail = INFO.supportEmail ? `<a href="mailto:${esc(INFO.supportEmail)}">Email par likho — ${esc(INFO.supportEmail)}</a>` : '';
+  const wa = INFO.whatsapp ? `<a href="https://wa.me/${esc(INFO.whatsapp.replace(/\D/g,''))}" target="_blank" rel="noopener">WhatsApp par baat karo</a>` : '';
+  openOv('sheet', `<h2>Support</h2><p>Koi dikkat ho ya sawaal ho, hume batao.</p><div class="linklist">${mail}${wa}</div><button class="btn ghost" data-a="closeOv">Band karo</button>`);
+}
+function faq(){
+  openOv('sheet', `<h2>FAQ</h2><div class="faqlist">${INFO.faq.map(([q,a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div><button class="btn ghost" data-a="closeOv" style="margin-top:14px">Band karo</button>`);
+}
+function legalSheet(title, text){ openOv('sheet', `<h2>${esc(title)}</h2><p style="white-space:pre-wrap">${esc(text)}</p><button class="btn ghost" data-a="closeOv">Band karo</button>`); }
+
+/* ---------- render ---------- */
+function render(){
+  const sc = $('#screen'), nav = $('#nav');
+  if(!store.get('kcs.onboarded', false) && S.view !== 'welcome'){ S.view = 'welcome'; }
+  if(S.view === 'welcome'){
+    sc.className = ''; nav.classList.add('hide'); sc.innerHTML = welcomeView(); sc.scrollTop = 0; return;
+  }
+  if(S.view === 'chat'){
+    if(!story(S.chatId)){ S.view = 'home'; return render(); }
+    sc.className = 'chat'; nav.classList.add('hide'); sc.innerHTML = chatView();
+    const box = $('#msgs'); const c = S.chats[S.chatId];
+    box.addEventListener('scroll', updDown, {passive:true});
+    box.scrollTop = (c && c.messages.length) ? box.scrollHeight : 0;
+    syncAct(); paintTray(); updDown(); return;
+  }
+  if(S.view === 'profile'){
+    sc.className = ''; nav.classList.add('hide'); sc.innerHTML = profileView(); sc.scrollTop = 0; return;
+  }
+  sc.className = ''; nav.classList.remove('hide');
+  sc.innerHTML = ({home:homeView, search:searchView, chats:chatsView})[S.view]();
+  nav.querySelectorAll('button').forEach(b => { if(b.dataset.v === S.view) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  sc.scrollTop = S.scroll[S.view] || 0;
+}
+function go(view, extra){
+  if(S.view === 'home' || S.view === 'search' || S.view === 'chats') S.scroll[S.view] = $('#screen').scrollTop;
+  S.view = view; Object.assign(S, extra || {});
+  history.pushState({app:1, view:S.view, id:S.chatId}, '');
+  render();
+}
+
+/* ---------- overlays + back button ---------- */
+function openMenu(){
+  const s = story(S.chatId); if(!s) return;
+  const price = s.price > 0 ? s.price : 0;
+  const html = `
+    <button class="mrow" data-a="replay"><span class="ic">${I.replay}</span><span class="grow">Replay</span></button>
+    <button class="mrow" data-a="guide"><span class="ic">${I.guide}</span><span class="grow">Play Guide</span></button>
+    <button class="mrow" data-a="report"><span class="ic">${I.flag}</span><span class="grow">Report</span></button>
+    <button class="mrow" data-a="shareChat"><span class="ic">${I.shareIc}</span><span class="grow">Share</span></button>
+    <div class="mdiv"></div>
+    <button class="mrow" data-a="coinInfo"><span class="ic coin2">क</span><span class="grow">This Story:<br><b>${price}/Message</b></span><span class="ic">${I.chev}</span></button>
+    <div class="mdiv"></div>
+    <button class="mrow danger" data-a="delchat"><span class="ic">${I.trash}</span><span class="grow">Delete Chat</span></button>`;
+  openOv('menu', html);
+}
+function positionMenu(){
+  const btn = document.querySelector('[data-a="menu"]'); const app = $('#app'); const el = $('#menu');
+  if(!btn || !app) return;
+  const a = app.getBoundingClientRect(), b = btn.getBoundingClientRect();
+  el.style.top = Math.round(b.bottom - a.top + 6) + 'px';
+  el.style.right = Math.round(a.right - b.right) + 'px';
+}
+function showOv(kind, html){
+  if(kind === 'sheet'){ $('#sheetBody').innerHTML = html; $('#sheet').classList.add('open'); }
+  else if(kind === 'menu'){ $('#menu').innerHTML = html; positionMenu(); $('#menu').classList.add('open'); }
+  else { $('#lb').innerHTML = html; $('#lb').classList.add('open'); }
+}
+function hideOv(){ $('#sheet').classList.remove('open'); $('#lb').classList.remove('open'); $('#menu').classList.remove('open'); }
+function openOv(kind, html){
+  if(S.ov){ showOv(kind, html); return; }
+  S.ov = kind; showOv(kind, html);
+  history.pushState({app:1, view:S.view, id:S.chatId, ov:kind}, '');
+}
+function closeOv(then){
+  if(!S.ov){ if(then) then(); return; }
+  S.after = then || null; history.back();
+}
+let lastBack = 0;
+function rootBack(){
+  if(S.ov){ closeOv(); return; }
+  if(S.view !== 'home'){ S.view = 'home'; history.pushState({app:1, view:'home'}, ''); render(); return; }
+  const now = Date.now();
+  if(now - lastBack < 2300){ return; }
+  lastBack = now; toast('Bahar jaane ke liye dobara back dabao');
+  history.pushState({app:1, view:'home'}, '');
+}
+window.addEventListener('popstate', e => {
+  const st = e.state;
+  if(!st || !st.app){ rootBack(); return; }
+  const wasOv = S.ov;
+  if(S.ov && !st.ov){ hideOv(); S.ov = null; }
+  if(!st.ov && (st.view !== S.view || (st.id || null) !== S.chatId)){
+    if(S.rec){ try{ S.rec.stop(); }catch(_){} }
+    S.view = st.view; S.chatId = st.id || null; S.tray = null;
+    if((S.view === 'edit' || S.view === 'appinfo') && !S.draft) S.view = 'home';
+    render();
+  } else if(wasOv && !st.ov && (S.view === 'profile' || S.view === 'appinfo')){
+    render(); /* sheet band hua, par profile/app-settings screen apne aap update nahi hui thi */
+  }
+  if(S.after){ const f = S.after; S.after = null; f(); }
+});
+/* Kai website-to-APK / Cordova / Capacitor wrapper hardware back button ko is standard
+   'backbutton' document event se bhejte hain, na ki browser history se. Dono ko support karo. */
+document.addEventListener('backbutton', e => {
+  e.preventDefault();
+  if(S.ov){ closeOv(); return; }
+  if(S.view !== 'home'){ history.back(); return; }
+  rootBack();
+}, false);
+
+
+/* ---------- settings / creator sheets ---------- */
+function openSettings(){
+  openOv('sheet', `<h2>Settings</h2>
+    ${accountSection()}
+    ${settingsButtons()}`);
+}
+function aiNotReady(){
+  openOv('sheet', `<h2>AI abhi taiyar nahi hai</h2><p>Thodi der mein dobara try karo, ya app ko update ka wait karo.</p><button class="btn ghost" data-a="closeOv">Theek hai</button>`);
+}
+/* ---------- Firebase backend (optional) ---------- */
+function parseFbConfig(text){
+  let t = (text || '').trim();
+  t = t.replace(/^\s*(?:export\s+)?(?:const|let|var)\s+\w+\s*=\s*/, '').replace(/;\s*$/, '');
+  t = t.replace(/([{,]\s*)([A-Za-z0-9_$]+)\s*:/g, '$1"$2":').replace(/'/g, '"').replace(/,\s*}/g, '}');
+  const cfg = JSON.parse(t);
+  if(!cfg.apiKey || !cfg.projectId) throw new Error('bad');
+  return cfg;
+}
+function initFirebase(cfg){
+  try{
+    if(!window.firebase){
+      const why = window.__fbLoadFailed
+        ? 'Firebase load nahi ho paya — ye page kisi restrictive tareeke se khula hai (jaise content:// ya WebView), jo bahar ki files load nahi karne deta. Isko https:// se hosted jagah (jaise GitHub Pages, Cloudflare Pages) se kholkar try karo.'
+        : 'Firebase abhi load ho raha hai, 2-3 second ruk kar dobara try karo. Agar phir bhi na ho to internet check karo.';
+      toast(why); return false;
+    }
+    if(!FB.app) FB.app = firebase.initializeApp(cfg);
+    FB.auth = firebase.auth(); FB.db = firebase.firestore(); FB.ready = true;
+    FB.auth.onAuthStateChanged(u => { S.user = u; if(S.ov === 'sheet') showOv('sheet', accountSection() + settingsButtons()); else render(); });
+    listenContent();
+    return true;
+  }catch(e){ toast('Firebase config sahi se load nahi hui'); FB.ready = false; return false; }
+}
+function listenContent(){
+  if(!FB.ready) return;
+  if(FB.unsub) FB.unsub();
+  FB.unsub = FB.db.collection('app').doc('content').onSnapshot(doc => {
+    if(doc.exists){ const d = doc.data() || {}; R = {edits:d.edits || {}, custom:d.custom || []}; invalidate();
+      if(S.view === 'home' || S.view === 'search' || S.view === 'chats') render(); }
+  }, () => { /* rules block reads until signed in - ignore silently */ });
+  if(FB.infoUnsub) FB.infoUnsub();
+  FB.infoUnsub = FB.db.collection('app').doc('settings').onSnapshot(doc => {
+    if(doc.exists){ INFO = Object.assign({}, APP_INFO, doc.data() || {}); saveInfoLocal(); applyInfoTheme(); if(S.view === 'profile' || S.view === 'appinfo') render(); }
+  }, () => {});
+  if(FB.popUnsub) FB.popUnsub();
+  FB.popUnsub = FB.db.collection('stats').onSnapshot(snap => {
+    snap.forEach(doc => { POP[doc.id] = (doc.data() || {}).msgCount || 0; });
+    if(S.view === 'home' && S.tab === 'top') render();
+  }, () => {});
+}
+function bumpPopularity(id){
+  if(!FB.ready) return;
+  FB.db.collection('stats').doc(id).set({msgCount: firebase.firestore.FieldValue.increment(1)}, {merge:true}).catch(() => {});
+}
+async function connectFb(){
+  try{
+    const cfg = parseFbConfig($('#fbCfg').value);
+    store.set('kcs.fb', cfg);
+    if(initFirebase(cfg)){ toast('Backend jud gaya'); showOv('sheet', accountSection() + settingsButtons()); }
+  }catch(e){ toast('Config sahi format mein nahi hai. Firebase console se poora object copy karo.'); }
+}
+function disconnectFb(){
+  store.del('kcs.fb'); if(FB.unsub){ FB.unsub(); FB.unsub = null; }
+  if(FB.auth) FB.auth.signOut().catch(() => {});
+  FB.ready = false; FB.app = null; S.user = null; R = {edits:{}, custom:[]}; invalidate();
+  toast('Backend hata diya'); showOv('sheet', accountSection() + settingsButtons()); render();
+}
+async function doAuth(kind){
+  if(!FB.ready || S.authBusy) return;
+  const email = $('#accEmail').value.trim(), pass = $('#accPass').value;
+  if(!email || pass.length < 6) return toast('Sahi email aur 6+ letters ka password daalo');
+  S.authBusy = true;
+  try{
+    if(kind === 'signup') await FB.auth.createUserWithEmailAndPassword(email, pass);
+    else await FB.auth.signInWithEmailAndPassword(email, pass);
+    toast(kind === 'signup' ? 'Account ban gaya' : 'Login ho gaya');
+  }catch(e){
+    const m = {'auth/email-already-in-use':'Ye email pehle se registered hai, Login try karo.','auth/wrong-password':'Password galat hai.','auth/user-not-found':'Account nahi mila, "Naya account banao" try karo.','auth/invalid-credential':'Email ya password galat hai — ya account bana hi nahi. Pehli baar ho to "Naya account banao" dabao.','auth/invalid-email':'Email sahi format mein nahi hai.','auth/weak-password':'Password bahut chhota hai (6+ letters).','auth/network-request-failed':'Internet check karo.','auth/too-many-requests':'Bahut baar try ho gaya, thodi der ruk kar dobara try karo.','auth/operation-not-allowed':'Email/Password login Firebase console mein on nahi hai.'}[e.code];
+    toast(m || ('Kuch galat ho gaya (' + (e.code || 'error') + '), dobara try karo'));
+  }finally{ S.authBusy = false; showOv('sheet', accountSection() + settingsButtons()); }
+}
+function doLogout(){ if(FB.auth) FB.auth.signOut(); }
+function accountSection(){
+  if(!FB.ready) return `<h2>Account</h2><p style="color:var(--muted)">Abhi connect nahi hai.</p>`;
+  if(!S.user){
+    return `<h2>Account</h2><p>Apna account banao ya login karo.</p>
+      <div class="field"><label for="accEmail">Email</label><input id="accEmail" type="email" autocomplete="email"></div>
+      <div class="field"><label for="accPass">Password</label><input id="accPass" type="password" autocomplete="current-password"></div>
+      <button class="btn" data-a="login" ${S.authBusy ? 'disabled' : ''}>Login karo</button>
+      <button class="btn ghost" data-a="signup" ${S.authBusy ? 'disabled' : ''}>Naya account banao</button>`;
+  }
+  return `<h2>Account</h2><p>Login hai: <b>${esc(S.user.email || S.user.uid)}</b></p>
+    <button class="btn ghost" data-a="logout">Logout karo</button>`;
+}
+function settingsButtons(){
+  return `<button class="btn ghost" data-a="full">Full screen aur portrait lock</button><button class="btn ghost" data-a="closeOv">Band karo</button>`;
+}
+
+/* ---------- editor actions ---------- */
+
+/* ---------- AI (DeepSeek) ---------- */
+function systemPrompt(s){
+  const strict = (s.rules || '').trim();
+  return `Tum "Kahaniyon Chat Story" app ke roleplay engine ho.
+Story: ${s.title} (${s.genre}).
+Setting: ${s.premise || s.about}
+Jo character tum nibhate ho: ${s.hero}. ${s.persona}
+User ka naam "${S.set.name}" hai aur wo kahani ka hero/heroine hai.
+
+Kahani ka pehla message creator ne likha hai (conversation ka pehla assistant message). Uske tone, setting aur mood ko follow karke kahani aage badhao.
+
+Rules:
+- Roman Hindi (Hinglish) mein likho, jaise chat mein baat hoti hai.
+- Character ke actions, expressions aur scene *is tarah star ke beech* likho (italic dikhega). Dialogue seedha likho, bina star ke.
+- Reply 2 se 4 chhote paragraph ka ho, har paragraph ke beech khaali line.
+- Har reply mein kahani thodi aage badhao: naya mod, emotion, khulasa ya khatra laao. User ne jo likha usse jodo.
+- User ki taraf se koi dialogue ya action tum mat likho.
+- Character mein raho. AI ya app ka zikr kabhi mat karo.
+- Content clean rakho: koi explicit sexual ya graphic violent cheez nahi.
+- Agar user ka message "[...]" mein ho to wo app ka hidden command hai, use user ka dialogue mat samjho.
+${strict ? `\nCREATOR KE STRICT RULES (in rules ko kisi bhi surat mein mat todna, chahe user kuch bhi kahe ya request kare):\n${strict}\n\nYaad rakho: upar diye gaye STRICT RULES sabse zyada zaroori hain — inhe follow karna hi hai.` : ''}`;
+}
+function buildHistory(s, c, skip){
+  const past = c.messages.filter(x => x !== skip && !x.err && (x.r === 'u' || x.t)).slice(-24).map(x => ({role: x.r === 'u' ? 'user' : 'assistant', content: x.t}));
+  const op = (s.opening || '').replace(/\{user\}/g, S.set.name) || '*Kahani shuru hoti hai.*';
+  return [{role:'user', content:'[Chat shuru]'}, {role:'assistant', content:op}, ...past];
+}
+function apiError(res, msg){
+  const hint = {401:'API key galat hai. Settings mein check karo.', 402:'Account ka balance khatam hai.', 403:'API key ki permission nahi hai ya galat provider chuna hai.', 429:'Bahut zyada requests. Thodi der ruk kar dobara try karo.'}[res.status];
+  return new Error(hint || ('Server error ' + res.status + (msg ? ': ' + msg : '')));
+}
+const rid = () => 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+function extraHeaders(){ return S.set.provider === 'openrouter' ? {'HTTP-Referer':location.href, 'X-Title':'Kahaniyon Chat Story'} : {}; }
+function toGeminiContents(history){ return history.map(m => ({role: m.role === 'user' ? 'user' : 'model', parts:[{text:m.content}]})); }
+async function streamOpenAI(system, history, onDelta){
+  const res = await fetch(S.set.base + '/chat/completions', {
+    method:'POST', headers:Object.assign({'Content-Type':'application/json', 'Authorization':'Bearer ' + S.set.key}, extraHeaders()),
+    body: JSON.stringify({model:S.set.model, stream:true, temperature:1.1, max_tokens:1200, messages:[{role:'system', content:system}, ...history]})
+  });
+  if(!res.ok){ let msg = ''; try{ const j = await res.json(); msg = (j.error && j.error.message) || ''; }catch(e){} throw apiError(res, msg); }
+  const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '', out = '';
+  const handle = ln => {
+    const l = ln.trim(); if(!l.startsWith('data:')) return;
+    const d = l.slice(5).trim(); if(!d || d === '[DONE]') return;
+    try{ const j = JSON.parse(d), p = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content; if(p){ out += p; onDelta(out); } }catch(e){}
+  };
+  for(;;){
+    const {done, value} = await rd.read();
+    if(done){ buf += dec.decode(); if(buf.trim()) handle(buf); break; }
+    buf += dec.decode(value, {stream:true});
+    const lines = buf.split('\n'); buf = lines.pop();
+    for(const ln of lines) handle(ln);
+  }
+  return out;
+}
+async function streamGemini(system, history, onDelta){
+  const url = `${S.set.base}/models/${encodeURIComponent(S.set.model)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(S.set.key)}`;
+  const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({contents:toGeminiContents(history), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:4096}})});
+  if(!res.ok){ let msg = ''; try{ const j = await res.json(); msg = (j.error && j.error.message) || ''; }catch(e){} throw apiError(res, msg); }
+  const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '', out = '';
+  const handle = ln => {
+    const l = ln.trim(); if(!l.startsWith('data:')) return;
+    const d = l.slice(5).trim(); if(!d) return;
+    try{ const j = JSON.parse(d), cd = j.candidates && j.candidates[0], p = cd && cd.content && cd.content.parts && cd.content.parts.filter(x => !x.thought).map(x => x.text || '').join(''); if(p){ out += p; onDelta(out); } }catch(e){}
+  };
+  for(;;){
+    const {done, value} = await rd.read();
+    if(done){ buf += dec.decode(); if(buf.trim()) handle(buf); break; }
+    buf += dec.decode(value, {stream:true});
+    const lines = buf.split('\n'); buf = lines.pop();
+    for(const ln of lines) handle(ln);
+  }
+  return out;
+}
+function streamCompletion(system, history, onDelta){ return S.set.kind === 'gemini' ? streamGemini(system, history, onDelta) : streamOpenAI(system, history, onDelta); }
+async function oneShotOpenAI(system, messages){
+  const res = await fetch(S.set.base + '/chat/completions', {
+    method:'POST', headers:Object.assign({'Content-Type':'application/json', 'Authorization':'Bearer ' + S.set.key}, extraHeaders()),
+    body: JSON.stringify({model:S.set.model, stream:false, temperature:1.1, max_tokens:200, messages:[{role:'system', content:system}, ...messages]})
+  });
+  if(!res.ok) throw apiError(res, '');
+  const j = await res.json();
+  return (j.choices && j.choices[0] && j.choices[0].message.content) || '';
+}
+async function oneShotGemini(system, messages){
+  const url = `${S.set.base}/models/${encodeURIComponent(S.set.model)}:generateContent?key=${encodeURIComponent(S.set.key)}`;
+  const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({contents:toGeminiContents(messages), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:1024}})});
+  if(!res.ok) throw apiError(res, '');
+  const j = await res.json();
+  const cd = j.candidates && j.candidates[0];
+  return (cd && cd.content && cd.content.parts && cd.content.parts.filter(x => !x.thought).map(x => x.text || '').join('')) || '';
+}
+function oneShotCompletion(system, messages){ return S.set.kind === 'gemini' ? oneShotGemini(system, messages) : oneShotOpenAI(system, messages); }
+async function ai(id, hidden){
+  if(S.busy) return;
+  const s = story(id), c = S.chats[id];
+  if(!S.set.key){ aiNotReady(); return; }
+  if(hidden) c.messages.push({r:'u', t:hidden, h:1, id:rid()});
+  const m = {r:'a', t:'', id:rid()}; c.messages.push(m);
+  S.busy = true; c.updated = Date.now(); S.tray = null; paintTray(); paintMsgs(id, true);
+  const history = buildHistory(s, c, m);
+  try{
+    const full = await streamCompletion(systemPrompt(s), history, txt => { m.t = txt; paintMsgs(id); });
+    if(!full.trim()) throw new Error('AI ne kuch nahi likha. Dobara koshish karo.');
+    m.t = full;
+  }catch(e){
+    m.t = ''; m.err = (e instanceof TypeError) ? 'AI se connect nahi ho paya. Internet check karo. Agar browser seedha call block kar raha hai to Settings mein apne backend proxy ka URL daalo.' : e.message;
+  }finally{
+    S.busy = false; c.updated = Date.now(); saveChats(); paintMsgs(id);
+  }
+}
+function truncateAfter(mid){
+  const c = S.chats[S.chatId]; if(!c) return -1;
+  const idx = c.messages.findIndex(m => m.id === mid);
+  if(idx === -1) return -1;
+  c.messages = c.messages.slice(0, idx + 1);
+  return idx;
+}
+function contFrom(mid){
+  if(S.busy) return;
+  if(!S.set.key){ aiNotReady(); return; }
+  const c = S.chats[S.chatId]; c.messages = c.messages.filter(m => !m.err);
+  if(truncateAfter(mid) === -1) return;
+  saveChats(); ai(S.chatId, NEXT_MSG);
+}
+function regenFrom(mid){
+  if(S.busy) return;
+  if(!S.set.key){ aiNotReady(); return; }
+  const c = S.chats[S.chatId]; if(!c) return;
+  const idx = c.messages.findIndex(m => m.id === mid);
+  if(idx === -1) return;
+  c.messages = c.messages.filter(m => !m.err).slice(0, idx);
+  saveChats(); ai(S.chatId);
+}
+function sendUser(text){
+  text = (text || '').trim(); if(!text || S.busy) return;
+  if(!S.set.key){ aiNotReady(); return; }
+  if(!S.chats[S.chatId]) S.chats[S.chatId] = {messages:[], updated:Date.now()};
+  const c = S.chats[S.chatId];
+  c.messages = c.messages.filter(m => !m.err);
+  c.messages.push({r:'u', t:text, id:rid()}); saveChats(); bumpPopularity(S.chatId); ai(S.chatId);
+}
+async function getHints(){
+  const id = S.chatId, s = story(id); if(S.busy) return;
+  if(!S.set.key){ aiNotReady(); return; }
+  if(S.tray && !S.tray.loading){ S.tray = null; paintTray(); return; }
+  const c = S.chats[id] || {messages:[]};
+  S.tray = {loading:true, items:[]}; paintTray();
+  try{
+    const text = await oneShotCompletion(systemPrompt(s), [...buildHistory(s, c, null),
+      {role:'user', content:'[HINT] Ab user ke liye 3 alag chhote reply suggest karo (har ek 12 shabdon se kam, user ki taraf se, dialogue ya *action*). Har suggestion nayi line par, bina number ya prefix ke. Sirf 3 lines.'}]);
+    const items = text.split('\n').map(x => x.replace(/^\s*(?:[-•\d.)]+\s*)/, '').replace(/^["“]|["”]$/g, '').trim()).filter(Boolean).slice(0, 3);
+    if(S.chatId === id && S.tray) S.tray = {loading:false, items};
+  }catch(e){
+    S.tray = null; toast(e instanceof TypeError ? 'Suggestions nahi aa paye. Internet check karo.' : e.message);
+  }
+  paintTray();
+}
+
+/* ---------- voice (mic) ---------- */
+function toggleMic(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ toast('Is browser mein voice typing nahi hai'); return; }
+  if(S.rec){ try{ S.rec.stop(); }catch(e){} return; }
+  const r = new SR(), inp = $('#inp'), base = inp.value;
+  r.lang = 'hi-IN'; r.interimResults = true; r.continuous = false;
+  r.onresult = e => { let t = ''; for(const x of e.results) t += x[0].transcript; inp.value = (base + ' ' + t).trim(); autosize(); syncAct(); };
+  r.onend = () => { S.rec = null; syncAct(); };
+  r.onerror = ev => { toast(ev.error === 'not-allowed' ? 'Mic ki permission do' : 'Awaaz sun nahi paya'); };
+  S.rec = r; try{ r.start(); }catch(e){ S.rec = null; } syncAct();
+}
+
+/* ---------- portrait lock ---------- */
+function isLandscape(){
+  try{ if(screen.orientation && screen.orientation.type) return screen.orientation.type.startsWith('landscape'); }catch(e){}
+  return Math.abs(window.orientation || 0) === 90;
+}
+function checkOrient(){ $('#rot').classList.toggle('on', matchMedia('(pointer:coarse)').matches && isLandscape()); }
+function tryLock(){ try{ if(screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(() => {}); }catch(e){} }
+async function goFull(){
+  try{ await document.documentElement.requestFullscreen(); await screen.orientation.lock('portrait'); toast('Full screen mein portrait lock ho gaya'); }
+  catch(e){ toast('Is browser mein lock nahi ho paya. APK ya installed app mein pakka lock hota hai.'); }
+}
+if(screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', checkOrient);
+addEventListener('orientationchange', checkOrient);
+document.addEventListener('click', function once(){ tryLock(); document.removeEventListener('click', once); }, {once:false});
+
+/* ---------- actions ---------- */
+function openChat(id){
+  if(!S.chats[id]) S.chats[id] = {messages:[], updated:Date.now()};
+  go('chat', {chatId:id, tray:null});
+}
+const ACT = {
+  tab: el => { S.tab = el.dataset.v; render(); },
+  nav: el => { S.view = el.dataset.v; history.replaceState({app:1, view:S.view}, ''); render(); },
+  open: el => openChat(el.dataset.id),
+  back: () => history.back(),
+  settings: () => openSettings(),
+  profile: () => go('profile'), finishWelcome, pickGender: el => {
+    const n = $('#wName') ? $('#wName').value : '', ph = $('#wPhone') ? $('#wPhone').value : '';
+    S.wGender = el.dataset.g; render();
+    if($('#wName')) $('#wName').value = n; if($('#wPhone')) $('#wPhone').value = ph;
+  },
+  profDetails, msgHistory, purchHistory, rateUs, support, faq,
+  tos: () => legalSheet('Terms of Service', INFO.terms),
+  privacy: () => legalSheet('Privacy Policy', INFO.privacy),
+  refund: () => legalSheet('Refund Policy', INFO.refund),
+  shareApp: () => { const data = {title:'Kahaniyon Chat Story', text:'Kahaniyon Chat Story - AI ke saath apni kahani khelo!', url: location.href};
+    if(navigator.share) navigator.share(data).catch(() => {});
+    else if(navigator.clipboard) navigator.clipboard.writeText(data.text + ' ' + data.url).then(() => toast('Link copy ho gaya')).catch(() => toast('Copy nahi ho paya'));
+    else toast('Is browser mein share support nahi hai'); },
+  saveProfName: () => { const v = $('#pfName').value.trim(); if(!v) return toast('Naam khaali nahi ho sakta'); S.set.name = v; S.set.phone = $('#pfPhone').value.trim(); saveSet(); syncMyChats(true); closeOv(() => toast('Save ho gaya')); },
+  pickProfAvatar: async () => {
+    const [f] = await pickImages(false); if(!f) return;
+    try{ S.set.avatar = await fileToDataUrl(f, 420, .82); saveSet(); showOv('sheet', profDetailsHtml()); }
+    catch(e){ toast('Photo load nahi ho payi'); }
+  },
+  setProfAvatarUrl: () => { const u = $('#pfAvatarUrl').value.trim(); if(!/^https?:\/\//i.test(u)) return toast('Sahi photo URL daalo (http se shuru)'); S.set.avatar = u; saveSet(); showOv('sheet', profDetailsHtml()); },
+  rmProfAvatar: () => { S.set.avatar = ''; saveSet(); showOv('sheet', profDetailsHtml()); },
+  openFromHist: el => { const id = el.dataset.id; closeOv(() => openChat(id)); },
+  logout: () => {
+    if(FB.ready && S.user){ if(!confirm('Logout karna hai?')) return; FB.auth.signOut().then(() => toast('Logout ho gaya')); }
+    else toast('Abhi login nahi hai. "Account setting" mein backend jodkar login karo.');
+  },
+  closeOv: () => closeOv(),
+  connectFb, disconnectFb, login: () => doAuth('login'), signup: () => doAuth('signup'),
+  full: goFull,
+  theme: () => { S.set.theme = S.set.theme === 'dark' ? 'light' : 'dark'; saveSet(); applyTheme(); const b = document.querySelector('[data-a="theme"]'); if(b) b.innerHTML = S.set.theme === 'dark' ? I.sun : I.moon; },
+  zoom: el => { const s = story(S.chatId); openOv('lb', `<img src="${s.images[+el.dataset.i]}" alt="Story photo">`); },
+  zoomOpen: () => { const s = story(S.chatId); openOv('lb', `<img src="${s.openImage}" alt="Photo">`); },
+  down: () => { const m = $('#msgs'); m.scrollTo({top:m.scrollHeight, behavior:'smooth'}); },
+  act: () => {
+    if(S.rec){ try{ S.rec.stop(); }catch(e){} return; }
+    const i = $('#inp'); if(i.value.trim()){ const t = i.value; i.value = ''; autosize(); S.tray = null; paintTray(); syncAct(); sendUser(t); } else toast('Awaaz se likhna jald aa raha hai');
+  },
+  hint: getHints,
+  pickHint: el => { const i = $('#inp'); i.value = el.dataset.t; S.tray = null; paintTray(); autosize(); syncAct(); i.focus(); },
+  contFrom: el => contFrom(el.dataset.mid), regenFrom: el => regenFrom(el.dataset.mid),
+  next: () => { if(S.busy) return; if(!S.set.key){ aiNotReady(); return; } const c = S.chats[S.chatId]; c.messages = c.messages.filter(m => !m.err); ai(S.chatId, NEXT_MSG); },
+  retry: () => { const c = S.chats[S.chatId]; c.messages = c.messages.filter(m => !m.err); ai(S.chatId); },
+  menu: openMenu,
+  replay: () => ACT.restart(),
+  guide: () => closeOv(() => openOv('sheet', `<h2>Play Guide</h2><p>${esc(story(S.chatId).about || story(S.chatId).premise || story(S.chatId).sub || '')}</p>
+    <div class="notice on">Neeche diye options par tap karo ya apna message likho. "Kahani aage badhao" naya mod layega.</div>
+    <button class="btn ghost" data-a="closeOv">Theek hai</button>`)),
+  report: () => closeOv(() => openOv('sheet', `<h2>Report</h2><p>Is chat mein koi dikkat hai? Hume batao.</p>
+    <div class="field"><label for="repR">Reason</label><select id="repR"><option>Inappropriate content</option><option>Spam</option><option>Bug ya error</option><option>Kuch aur</option></select></div>
+    <div class="field"><label for="repN">Details (optional)</label><textarea id="repN" placeholder="Thodi detail likho"></textarea></div>
+    <button class="btn" data-a="sendReport">Report bhejo</button><button class="btn ghost" data-a="closeOv">Cancel</button>`)),
+  sendReport: () => {
+    const r = $('#repR').value, n = $('#repN').value.trim();
+    if(FB.ready) FB.db.collection('reports').add({story:S.chatId, reason:r, note:n, at:Date.now(), by:(S.user && S.user.uid) || 'guest'}).catch(() => {});
+    closeOv(() => toast('Report bhej diya, dhanyawad'));
+  },
+  shareChat: () => closeOv(() => {
+    const s = story(S.chatId), data = {title:'Kahaniyon Chat Story', text: s.title + (s.sub ? ' - ' + s.sub : ''), url: location.href};
+    if(navigator.share) navigator.share(data).catch(() => {});
+    else if(navigator.clipboard) navigator.clipboard.writeText(data.text + ' ' + data.url).then(() => toast('Link copy ho gaya')).catch(() => toast('Copy nahi ho paya'));
+    else toast('Is browser mein share support nahi hai');
+  }),
+  coinInfo: () => closeOv(() => toast('Coins wallet abhi taiyar nahi hai')),
+  copyMsg: el => {
+    const kind = el.dataset.kind, mid = el.dataset.mid;
+    let text = '';
+    if(kind === 'open') text = (story(S.chatId).opening || '').replace(/\{user\}/g, S.set.name);
+    else { const c = S.chats[S.chatId]; const m = c && c.messages.find(x => x.id === mid); text = m ? m.t : ''; }
+    const plain = text.replace(/\*/g, '');
+    if(!navigator.clipboard){ closeOv(() => toast('Is browser mein copy support nahi hai')); return; }
+    navigator.clipboard.writeText(plain).then(() => closeOv(() => toast('Copy ho gaya'))).catch(() => closeOv(() => toast('Copy nahi ho paya')));
+  },
+  delMsg: el => { const mid = el.dataset.mid; closeOv(() => {
+    if(!confirm('Ye message delete karna hai?')) return;
+    const c = S.chats[S.chatId]; c.messages = c.messages.filter(x => x.id !== mid); saveChats(); paintMsgs(S.chatId, true);
+  }); },
+  restart: () => closeOv(() => { if(S.busy) return; if(!confirm('Kahani shuru se start hogi. Purani chat hat jayegi. Aage badhein?')) return; S.chats[S.chatId] = {messages:[], updated:Date.now()}; saveChats(); render(); }),
+  delchat: () => closeOv(() => { if(S.busy) return; if(!confirm('Ye chat hamesha ke liye delete ho jayegi. Aage badhein?')) return; delete S.chats[S.chatId]; saveChats(); history.back(); })
+};
+document.addEventListener('click', e => {
+  if(e.target === $('#sheet')){ closeOv(); return; }
+  if(S.ov === 'menu' && !e.target.closest('#menu') && !e.target.closest('[data-a="menu"]')){ closeOv(); return; }
+  const el = e.target.closest('[data-a]'); if(!el) return;
+  const f = ACT[el.dataset.a]; if(f) f(el);
+});
+let holdTimer = null, holdEl = null, holdX = 0, holdY = 0;
+function holdCancel(){ if(holdTimer){ clearTimeout(holdTimer); holdTimer = null; } if(holdEl){ holdEl.classList.remove('pressed'); holdEl = null; } }
+document.getElementById('app').addEventListener('pointerdown', e => {
+  const row = e.target.closest('#msgs [data-mid]'); if(!row || S.busy) return;
+  holdEl = row.querySelector('.bub') || row; holdX = e.clientX; holdY = e.clientY;
+  holdTimer = setTimeout(() => { if(holdEl){ holdEl.classList.add('pressed'); if(navigator.vibrate) navigator.vibrate(12); openMsgMenu(row); } holdTimer = null; }, 480);
+});
+document.getElementById('app').addEventListener('pointermove', e => { if(holdTimer && (Math.abs(e.clientX - holdX) > 10 || Math.abs(e.clientY - holdY) > 10)) holdCancel(); });
+document.getElementById('app').addEventListener('pointerup', holdCancel);
+document.getElementById('app').addEventListener('pointerleave', holdCancel);
+document.getElementById('app').addEventListener('contextmenu', e => { if(e.target.closest('#msgs [data-mid]')) e.preventDefault(); });
+function openMsgMenu(row){
+  const kind = row.dataset.kind, mid = row.dataset.mid;
+  openOv('sheet', `<h2>Message</h2>
+    <button class="btn ghost" data-a="copyMsg" data-mid="${esc(mid)}" data-kind="${kind}">Copy karo</button>
+    ${kind !== 'open' ? `<button class="btn danger" data-a="delMsg" data-mid="${esc(mid)}">Delete karo</button>` : ''}
+    <button class="btn ghost" data-a="closeOv">Cancel</button>`);
+}
+document.addEventListener('input', e => {
+  if(e.target.id === 'q'){ S.q = e.target.value; $('#results').innerHTML = searchResults(); }
+  if(e.target.id === 'inp'){ autosize(); syncAct(); }
+});
+document.addEventListener('change', e => {
+  if(e.target.id === 'fProvider'){
+    const p = PROVIDERS[e.target.value] || PROVIDERS.custom;
+    if($('#fBase')) $('#fBase').value = p.base;
+    if($('#fModel')) $('#fModel').value = p.model;
+  }
+});
+document.addEventListener('keydown', e => {
+  if(e.target.id === 'inp' && e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); const i = $('#inp'); if(i.value.trim()){ const t = i.value; i.value = ''; autosize(); S.tray = null; paintTray(); syncAct(); sendUser(t); } }
+  if(e.key === 'Escape' && S.ov) closeOv();
+});
+
+/* ---------- boot ---------- */
+async function boot(){
+  loadInfoLocal();
+  runSplash();
+  try{ const c = await idb.get('creator'); if(c) C = Object.assign({edits:{}, custom:[]}, c); }catch(e){}
+  try{ const r = await fetch('content.json', {cache:'no-cache'}); if(r.ok){ const j = await r.json(); R = {edits:j.edits || {}, custom:j.custom || []}; } }catch(e){}
+  invalidate();
+  if(S.view === 'home' || S.view === 'search' || S.view === 'chats'){ if(!S.ov) render(); }
+  if(FIXED_FB_CONFIG) initFirebase(FIXED_FB_CONFIG);
+}
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+applyTheme();
+history.replaceState({root:1}, '');
+history.pushState({app:1, view:'home'}, '');
+render(); checkOrient(); tryLock();
+boot();
+</script>
+</body>
+</html>
