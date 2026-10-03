@@ -60,6 +60,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .cover-title{font-family:var(--display);color:#e7c26b;line-height:1.02}
 .cover-sub{color:rgba(255,255,255,.8)}
 
+
+.herorail{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -20px;padding:0 20px 2px;scrollbar-width:none}
+.herorail::-webkit-scrollbar{display:none}
+.herorail .hero{flex:0 0 80%;scroll-snap-align:start}
 .hero{border-radius:22px;aspect-ratio:4/5;display:flex;flex-direction:column;padding:22px 20px 18px;box-shadow:0 0 0 1px rgba(255,255,255,.05);color:#fff}
 .hero .chip{align-self:flex-start;font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.18);margin-bottom:10px;color:#fff}
 .hero .cover-title{font-size:clamp(38px,12.5vw,58px)}
@@ -230,6 +234,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .field input,.field select,.field textarea{width:100%;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-size:16px;height:46px}
 .field textarea{height:auto;min-height:92px;padding:10px 14px;resize:vertical;line-height:1.4}
 .field small{display:block;color:var(--muted);font-size:13px;margin-top:5px}
+.pwrow{display:flex;align-items:center;gap:8px}
+.pwrow input{flex:1}
+.eyeBtn{flex:0 0 42px;height:46px;display:grid;place-items:center;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.eyeBtn.on{color:var(--text)}
 .gpick-row{display:flex;gap:8px;flex-wrap:wrap}
 .gpick{padding:10px 16px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-size:14.5px;font-weight:600;color:var(--text)}
 .gpick.on{background:var(--red);border-color:var(--red);color:#fff}
@@ -279,7 +287,20 @@ const store = {
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
-function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2400); }
+function toast(m, ms){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), ms || 3600); }
+async function copyText(text){
+  if(navigator.clipboard && window.isSecureContext){
+    try{ await navigator.clipboard.writeText(text); return true; }catch(e){}
+  }
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.left = '0'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
 function fmt(t){ return esc(String(t || '').trim()).replace(/\*{2,}/g,'*').replace(/\*([^*\n]+)\*/g,'<em>$1</em>'); }
 
 /* IndexedDB (photos aur creator data ke liye) */
@@ -397,9 +418,9 @@ function runSplash(){
   const goSecond = () => {
     if(!second){ finish(); return; }
     img.style.opacity = '0'; nm.style.opacity = '0';
-    setTimeout(() => { nm.textContent = ''; img.style.display = ''; img.className = 'wide'; img.src = second; img.style.opacity = '1'; setTimeout(finish, 2000); }, 320);
+    setTimeout(() => { nm.textContent = ''; img.style.display = ''; img.className = 'wide'; img.src = second; img.style.opacity = '1'; setTimeout(finish, 1800); }, 320);
   };
-  setTimeout(goSecond, 2400);
+  setTimeout(goSecond, 1800);
 }
 function parseFaqText(t){
   return (t || '').split(/\n\s*\n/).map(block => { const lines = block.split('\n').map(x => x.trim()).filter(Boolean);
@@ -517,7 +538,8 @@ const I = {
   doc:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7Z"/><path d="M14 3v4h4"/><path d="M9.5 12h5M9.5 15.5h5"/></svg>',
   refund:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M8 15l-2-2 2-2"/><path d="M6 13h5"/></svg>',
   gear:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.9l.06.06a2 2 0 1 1-2.9 2.9l-.06-.06a1.7 1.7 0 0 0-1.9-.34 1.7 1.7 0 0 0-1 1.6V20a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.34l-.06.06a2 2 0 1 1-2.9-2.9l.06-.06a1.7 1.7 0 0 0 .34-1.9 1.7 1.7 0 0 0-1.6-1H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.34-1.9l-.06-.06a2 2 0 1 1 2.9-2.9l.06.06a1.7 1.7 0 0 0 1.9.34H10a1.7 1.7 0 0 0 1-1.6V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.34l.06-.06a2 2 0 1 1 2.9 2.9l-.06.06a1.7 1.7 0 0 0-.34 1.9V10a1.7 1.7 0 0 0 1.6 1H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1Z"/></svg>',
-  logout:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>'
+  logout:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
+  eye:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>'
 };
 
 /* ---------- cover art ---------- */
@@ -551,7 +573,8 @@ function homeView(){
   const L = allStories(); let body = '';
   if(S.tab === 'foryou'){
     const cont = continueList();
-    body = `<div class="pad">${hero(L[0])}<h2 class="h2">Chat jaari rakho</h2>
+    const featured = [...L].sort((a,b) => (b.createdAt||0) - (a.createdAt||0) || (b.isNew?1:0) - (a.isNew?1:0));
+    body = `<div class="pad"><div class="herorail">${featured.map(hero).join('')}</div><h2 class="h2">Chat jaari rakho</h2>
       ${cont.length ? `<div class="rail">${cont.map(railItem).join('')}</div>` : '<p class="empty">Abhi koi chat shuru nahi hui. Upar se kahani chuno aur AI ke saath kahani aage badhao.</p>'}
       <h2 class="h2">Aapke liye</h2><div class="grid">${L.slice(1).map(gridCard).join('')}</div></div>`;
   } else if(S.tab === 'new'){
@@ -903,21 +926,23 @@ async function doAuth(kind){
   if(!email || pass.length < 6) return toast('Sahi email aur 6+ letters ka password daalo');
   S.authBusy = true;
   try{
-    if(kind === 'signup') await FB.auth.createUserWithEmailAndPassword(email, pass);
-    else await FB.auth.signInWithEmailAndPassword(email, pass);
+    const cred = kind === 'signup' ? await FB.auth.createUserWithEmailAndPassword(email, pass) : await FB.auth.signInWithEmailAndPassword(email, pass);
+    if(cred && cred.user) S.user = cred.user; /* onAuthStateChanged ka wait nahi karte - turant screen update ho */
+    store.set('kcs.lastEmail', email); /* agli baar email dobara type na karna pade */
     toast(kind === 'signup' ? 'Account ban gaya' : 'Login ho gaya');
   }catch(e){
     const m = {'auth/email-already-in-use':'Ye email pehle se registered hai, Login try karo.','auth/wrong-password':'Password galat hai.','auth/user-not-found':'Account nahi mila, "Naya account banao" try karo.','auth/invalid-credential':'Email ya password galat hai — ya account bana hi nahi. Pehli baar ho to "Naya account banao" dabao.','auth/invalid-email':'Email sahi format mein nahi hai.','auth/weak-password':'Password bahut chhota hai (6+ letters).','auth/network-request-failed':'Internet check karo.','auth/too-many-requests':'Bahut baar try ho gaya, thodi der ruk kar dobara try karo.','auth/operation-not-allowed':'Email/Password login Firebase console mein on nahi hai.'}[e.code];
     toast(m || ('Kuch galat ho gaya (' + (e.code || 'error') + '), dobara try karo'));
-  }finally{ S.authBusy = false; showOv('sheet', accountSection() + settingsButtons()); }
+  }finally{ S.authBusy = false; showOv('sheet', accountSection() + settingsButtons()); const ei = $('#accEmail'); if(ei) ei.value = email; }
 }
 function doLogout(){ if(FB.auth) FB.auth.signOut(); }
 function accountSection(){
   if(!FB.ready) return `<h2>Account</h2><p style="color:var(--muted)">Abhi connect nahi hai.</p>`;
   if(!S.user){
     return `<h2>Account</h2><p>Apna account banao ya login karo.</p>
-      <div class="field"><label for="accEmail">Email</label><input id="accEmail" type="email" autocomplete="email"></div>
-      <div class="field"><label for="accPass">Password</label><input id="accPass" type="password" autocomplete="current-password"></div>
+      <div class="notice on">Pehli baar is email se ho to <b>"Naya account banao"</b> dabao. Sirf pehle se bane account ke liye <b>"Login karo"</b> use karo.</div>
+      <div class="field"><label for="accEmail">Email</label><input id="accEmail" type="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="${esc(store.get('kcs.lastEmail', ''))}"></div>
+      <div class="field"><label for="accPass">Password</label><div class="pwrow"><input id="accPass" type="password" autocomplete="current-password"><button type="button" class="eyeBtn" data-a="togglePw" aria-label="Password dikhao">${I.eye}</button></div></div>
       <button class="btn" data-a="login" ${S.authBusy ? 'disabled' : ''}>Login karo</button>
       <button class="btn ghost" data-a="signup" ${S.authBusy ? 'disabled' : ''}>Naya account banao</button>`;
   }
@@ -959,8 +984,11 @@ function buildHistory(s, c, skip){
 }
 function apiError(res, msg){
   const hint = {401:'API key galat hai. Settings mein check karo.', 402:'Account ka balance khatam hai.', 403:'API key ki permission nahi hai ya galat provider chuna hai.', 429:'Bahut zyada requests. Thodi der ruk kar dobara try karo.'}[res.status];
-  return new Error(hint || ('Server error ' + res.status + (msg ? ': ' + msg : '')));
+  const err = new Error(hint || ('Server error ' + res.status + (msg ? ': ' + msg : '')));
+  err.status = res.status; return err;
 }
+const isTransient = e => e instanceof TypeError || [429, 500, 502, 503, 504].includes(e.status);
+function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
 const rid = () => 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 function extraHeaders(){ return S.set.provider === 'openrouter' ? {'HTTP-Referer':location.href, 'X-Title':'Kahaniyon Chat Story'} : {}; }
 function toGeminiContents(history){ return history.map(m => ({role: m.role === 'user' ? 'user' : 'model', parts:[{text:m.content}]})); }
@@ -1033,15 +1061,25 @@ async function ai(id, hidden){
   const m = {r:'a', t:'', id:rid()}; c.messages.push(m);
   S.busy = true; c.updated = Date.now(); S.tray = null; paintTray(); paintMsgs(id, true);
   const history = buildHistory(s, c, m);
-  try{
-    const full = await streamCompletion(systemPrompt(s), history, txt => { m.t = txt; paintMsgs(id); });
-    if(!full.trim()) throw new Error('AI ne kuch nahi likha. Dobara koshish karo.');
-    m.t = full;
-  }catch(e){
-    m.t = ''; m.err = (e instanceof TypeError) ? 'AI se connect nahi ho paya. Internet check karo. Agar browser seedha call block kar raha hai to Settings mein apne backend proxy ka URL daalo.' : e.message;
-  }finally{
-    S.busy = false; c.updated = Date.now(); saveChats(); paintMsgs(id);
+  const MAX_TRY = 5, BACKOFF = [1500, 3000, 5000, 8000];
+  for(let attempt = 0; attempt < MAX_TRY; attempt++){
+    try{
+      const full = await streamCompletion(systemPrompt(s), history, txt => { m.t = txt; paintMsgs(id); });
+      if(!full.trim()) throw new Error('AI ne kuch nahi likha. Dobara koshish karo.');
+      m.t = full; m.err = null; break;
+    }catch(e){
+      if(isTransient(e) && attempt < MAX_TRY - 1){
+        m.t = ''; m.retrying = true; paintMsgs(id);
+        await wait(BACKOFF[attempt] || 8000);
+        continue;
+      }
+      m.t = ''; m.retrying = false;
+      m.err = (e instanceof TypeError) ? 'AI se connect nahi ho paya. Internet check karo. Agar browser seedha call block kar raha hai to Settings mein apne backend proxy ka URL daalo.' : e.message;
+      break;
+    }
   }
+  m.retrying = false;
+  S.busy = false; c.updated = Date.now(); saveChats(); paintMsgs(id);
 }
 function truncateAfter(mid){
   const c = S.chats[S.chatId]; if(!c) return -1;
@@ -1141,8 +1179,8 @@ const ACT = {
   refund: () => legalSheet('Refund Policy', INFO.refund),
   shareApp: () => { const data = {title:'Kahaniyon Chat Story', text:'Kahaniyon Chat Story - AI ke saath apni kahani khelo!', url: location.href};
     if(navigator.share) navigator.share(data).catch(() => {});
-    else if(navigator.clipboard) navigator.clipboard.writeText(data.text + ' ' + data.url).then(() => toast('Link copy ho gaya')).catch(() => toast('Copy nahi ho paya'));
-    else toast('Is browser mein share support nahi hai'); },
+    else copyText(data.text + ' ' + data.url).then(ok => toast(ok ? 'Link copy ho gaya' : 'Copy nahi ho paya'));
+  },
   saveProfName: () => { const v = $('#pfName').value.trim(); if(!v) return toast('Naam khaali nahi ho sakta'); S.set.name = v; S.set.phone = $('#pfPhone').value.trim(); saveSet(); syncMyChats(true); closeOv(() => toast('Save ho gaya')); },
   pickProfAvatar: async () => {
     const [f] = await pickImages(false); if(!f) return;
@@ -1158,6 +1196,7 @@ const ACT = {
   },
   closeOv: () => closeOv(),
   connectFb, disconnectFb, login: () => doAuth('login'), signup: () => doAuth('signup'),
+  togglePw: el => { const i = $('#accPass'); if(!i) return; const on = i.type === 'password'; i.type = on ? 'text' : 'password'; el.classList.toggle('on', on); },
   full: goFull,
   theme: () => { S.set.theme = S.set.theme === 'dark' ? 'light' : 'dark'; saveSet(); applyTheme(); const b = document.querySelector('[data-a="theme"]'); if(b) b.innerHTML = S.set.theme === 'dark' ? I.sun : I.moon; },
   zoom: el => { const s = story(S.chatId); openOv('lb', `<img src="${s.images[+el.dataset.i]}" alt="Story photo">`); },
@@ -1189,18 +1228,17 @@ const ACT = {
   shareChat: () => closeOv(() => {
     const s = story(S.chatId), data = {title:'Kahaniyon Chat Story', text: s.title + (s.sub ? ' - ' + s.sub : ''), url: location.href};
     if(navigator.share) navigator.share(data).catch(() => {});
-    else if(navigator.clipboard) navigator.clipboard.writeText(data.text + ' ' + data.url).then(() => toast('Link copy ho gaya')).catch(() => toast('Copy nahi ho paya'));
-    else toast('Is browser mein share support nahi hai');
+    else copyText(data.text + ' ' + data.url).then(ok => toast(ok ? 'Link copy ho gaya' : 'Copy nahi ho paya'));
   }),
   coinInfo: () => closeOv(() => toast('Coins wallet abhi taiyar nahi hai')),
-  copyMsg: el => {
+  copyMsg: async el => {
     const kind = el.dataset.kind, mid = el.dataset.mid;
     let text = '';
     if(kind === 'open') text = (story(S.chatId).opening || '').replace(/\{user\}/g, S.set.name);
     else { const c = S.chats[S.chatId]; const m = c && c.messages.find(x => x.id === mid); text = m ? m.t : ''; }
     const plain = text.replace(/\*/g, '');
-    if(!navigator.clipboard){ closeOv(() => toast('Is browser mein copy support nahi hai')); return; }
-    navigator.clipboard.writeText(plain).then(() => closeOv(() => toast('Copy ho gaya'))).catch(() => closeOv(() => toast('Copy nahi ho paya')));
+    const ok = await copyText(plain);
+    closeOv(() => toast(ok ? 'Copy ho gaya' : 'Copy nahi ho paya. Phone ki clipboard permission check karo.'));
   },
   delMsg: el => { const mid = el.dataset.mid; closeOv(() => {
     if(!confirm('Ye message delete karna hai?')) return;
