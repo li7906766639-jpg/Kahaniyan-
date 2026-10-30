@@ -65,6 +65,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .herorail::-webkit-scrollbar{display:none}
 .herorail .hero{flex:0 0 80%;scroll-snap-align:start}
 .hero{border-radius:22px;aspect-ratio:4/5;display:flex;flex-direction:column;padding:22px 20px 18px;box-shadow:0 0 0 1px rgba(255,255,255,.05);color:#fff}
+.hero{cursor:pointer}
 .hero .chip{align-self:flex-start;font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.18);margin-bottom:10px;color:#fff}
 .hero .cover-title{font-size:clamp(38px,12.5vw,58px)}
 .hero .cover-sub{font-size:17px;margin-top:10px;max-width:16em}
@@ -88,6 +89,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .card b{display:block;margin-top:8px;font-size:15px}
 .card small{color:var(--muted);font-size:13px}
 .row-item{display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.row-item .when{flex:0 0 auto;align-self:flex-start;color:var(--muted);font-size:12.5px;white-space:nowrap;margin-left:6px}
 .row-item .cover{flex:0 0 70px;height:92px;border-radius:12px}
 .row-item .cover-sym{width:80%;left:10%;top:20%}
 .row-item .meta{flex:1;min-width:0}
@@ -143,6 +145,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .row.u{justify-content:flex-end}
 .msgActs{display:flex;gap:4px;margin:-4px 0 2px 4px}
 .msgActs button{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+.msgActs button.on{color:var(--red)}
 .msgActs button:active{background:var(--surface2);color:var(--text)}
 .msgActs button:disabled{opacity:.4}
 .bub{max-width:88%;padding:14px 16px;border-radius:20px;font-size:17px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -256,6 +259,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .thumb button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;font-size:16px;line-height:1}
 .stickybar{position:sticky;bottom:0;padding:12px 20px calc(12px + var(--safe-b));background:var(--bar);border-top:1px solid var(--line)}
 #toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);z-index:50;background:#f5f2ee;color:#111;padding:10px 16px;border-radius:99px;font-size:15px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;max-width:88%;text-align:center}
+#miniSpin{position:absolute;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35)}
+.spinr{width:38px;height:38px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin1 .8s linear infinite}
+@keyframes spin1{to{transform:rotate(360deg)}}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 #rot{position:fixed;inset:0;z-index:100;background:#0d0d0f;color:#f5f2ee;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
 #rot.on{display:flex}
@@ -282,12 +288,20 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 /* ---------- helpers ---------- */
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* Photo URL ko CSS url("...") mein surakshit daalne ka tarika - agar URL mein
+   khud ' ya " ho to bhi photo tootegi nahi. Pura style string banane ke baad
+   ise hamesha esc() se HTML attribute ke liye bhi wrap karna. */
+function cssUrl(u){ return 'url("' + String(u).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '")'; }
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
 function toast(m, ms){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), ms || 3600); }
+function showMiniSpinner(){
+  const el = document.createElement('div'); el.id = 'miniSpin'; el.innerHTML = '<div class="spinr"></div>';
+  $('#app').appendChild(el); return el;
+}
 async function copyText(text){
   if(navigator.clipboard && window.isSecureContext){
     try{ await navigator.clipboard.writeText(text); return true; }catch(e){}
@@ -381,6 +395,8 @@ const APP_INFO = {
   appName:'',
   splashPhotos:[],
   userBubbleColor:'',
+  voiceGender:'female',
+  voiceRate:1,
   supportEmail:'support@kahaniyon.app',
   whatsapp:'',
   terms:'Yahan apni Terms of Service likho: app kaise use karni hai, users ki zimmedariyan, aur account band hone ki sharte.',
@@ -450,6 +466,16 @@ const FIXED_AI = {
   kind:'gemini',
   key:'via-app'  // dummy hai, agar proxy nahi laga to seedha provider ki asli key yahan daal sakte ho
 };
+/* AWAAZ (voice) ke liye - bilkul FIXED_AI jaisa, koi bhi service ki key yahan daal sakte ho
+   (ElevenLabs sabse popular hai aur FREE TRIAL deta hai, card nahi maangta — par koi aur
+   service ho jo isी tarah 'base URL + key + voice id' leti ho, wo bhi chal jayegi).
+   Khaali chhodoge to phone ki apni free awaaz use hogi (robotic, par bilkul free). */
+const FIXED_VOICE = {
+  key:'',        // apni voice-service ki key yahan daalo, jaise ElevenLabs ki
+  voiceId:'21m00Tcm4TlvDq8ikWAM',  // ElevenLabs Voice Library se koi female/Hindi awaaz chun kar uska ID yahan daalo
+  base:'https://api.elevenlabs.io/v1/text-to-speech',
+  kind:'elevenlabs'
+};
 /* CREATOR: apna Firebase config yahan ek baar paste karo (creator.html ke "Backend (Firebase)"
    se copy karke) — taaki users ko kabhi paste-box na dikhe, sab apne aap connect ho jaye.
    null rakhoge to backend bilkul connect nahi hoga (content sirf content.json se aayega). */
@@ -486,7 +512,7 @@ const story = id => allStories().find(s => s.id === id);
 /* ---------- state ---------- */
 const S = {
   view:'home', tab:'foryou', chatId:null, q:'', busy:false, ov:null, after:null, rec:null, tray:null, draft:null,
-  creator: sessionStorage.getItem('kcs.creator') === '1', logoTaps:0, scroll:{}, user:null, authBusy:false, wGender:'',
+  creator: sessionStorage.getItem('kcs.creator') === '1', logoTaps:0, scroll:{}, user:null, authBusy:false, wGender:'', speakingId:null, audioEl:null,
   set: Object.assign({ key:'', base:'https://api.deepseek.com', model:'deepseek-chat', name:'Tum', theme:'dark', phone:'', gender:'', provider:'deepseek', kind:'openai', avatar:'' }, store.get('kcs.settings', {})),
   chats: store.get('kcs2.chats', {})
 };
@@ -527,6 +553,7 @@ const I = {
   chev:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
   ff:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 6 7 6-7 6"/><path d="m13 6 7 6-7 6"/></svg>',
   redo:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>',
+  speak:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
   trash:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/></svg>',
   pencil:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1Z"/></svg>',
   history:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11a9 9 0 1 1-2.6-6.4"/><path d="M21 3v5h-5"/><path d="M12 8v4l3 2"/></svg>',
@@ -544,11 +571,12 @@ const I = {
 
 /* ---------- cover art ---------- */
 const symSvg = (s, cls) => `<svg class="${cls}" viewBox="0 0 100 100" fill="none" stroke="${s.glow}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${SYM[s.sym] || SYM.pin}</svg>`;
-function cv(s, cls, inner, kind){
+function cv(s, cls, inner, kind, attrs){
   const img = kind === 'avatar' ? (s.avatar || (s.images && s.images[0])) : ((s.images && s.images[0]) || s.avatar);
   const base = `--c1:${s.c1};--c2:${s.c2};--glow:${s.glow}`;
-  if(img) return `<div class="cover has-img ${cls || ''}" style="${base};background-image:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.6)),url('${img}')">${inner || ''}</div>`;
-  return `<div class="cover ${cls || ''}" style="${base}">${symSvg(s,'cover-sym')}${inner || ''}</div>`;
+  const a = attrs || '';
+  if(img) return `<div class="cover has-img ${cls || ''}" ${a} style="${esc(base + ';background-image:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.6)),' + cssUrl(img))}">${inner || ''}</div>`;
+  return `<div class="cover ${cls || ''}" ${a} style="${base}">${symSvg(s,'cover-sym')}${inner || ''}</div>`;
 }
 const coverTitle = s => `<div class="cover-title">${esc(s.title)}</div><div class="cover-sub">${esc(s.sub)}</div>`;
 
@@ -558,7 +586,8 @@ const header = () => `<header class="top"><h1 class="logo">kahaniyon</h1><button
 const tabsBar = () => `<div class="tabs" role="tablist">${TABS.map(([k,l]) => `<button class="tab" role="tab" aria-selected="${S.tab===k}" data-a="tab" data-v="${k}">${l}</button>`).join('')}</div>`;
 function hero(s){
   const has = S.chats[s.id] && S.chats[s.id].messages.length;
-  return cv(s, 'hero', `<span class="chip">${esc(s.genre)}</span>${coverTitle(s)}<div class="spacer"></div><button class="start" data-a="open" data-id="${s.id}">${has ? 'Chat jaari rakho' : 'Chat shuru karo'}</button>`);
+  return cv(s, 'hero', `<span class="chip">${esc(s.genre)}</span>${coverTitle(s)}<div class="spacer"></div><button class="start" data-a="open" data-id="${s.id}">${has ? 'Chat jaari rakho' : 'Chat shuru karo'}</button>`,
+    null, `data-a="open" data-id="${s.id}" role="button" tabindex="0"`);
 }
 const railItem = s => `<button class="rail-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span>${esc(s.title)}</span></button>`;
 const gridCard = s => `<button class="card" data-a="open" data-id="${s.id}">${cv(s,'',coverTitle(s))}<b>${esc(s.title)}</b><small>${esc(s.genre)}</small></button>`;
@@ -590,11 +619,18 @@ function searchResults(){
   return list.length ? list.map(s => listRow(s)).join('') : '<p class="empty">Kuch nahi mila. Koi aur naam ya genre try karo, jaise "romance" ya "suspense".</p>';
 }
 const searchView = () => header() + `<div class="pad"><label class="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg><input id="q" type="search" placeholder="Kahani ya genre dhundo" value="${esc(S.q)}" autocomplete="off"></label><div id="results">${searchResults()}</div></div>`;
+function fmtChatDate(ts){
+  const d = new Date(ts), now = new Date();
+  if(d.toDateString() === now.toDateString()) return 'Today';
+  const y = new Date(now); y.setDate(now.getDate() - 1);
+  if(d.toDateString() === y.toDateString()) return 'Yesterday';
+  return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+}
 function chatsView(){
   const list = continueList();
   return header() + `<div class="pad"><h2 class="h2" style="margin-top:8px">Aapki chats</h2>` + (list.length ? list.map(s => {
     const c = S.chats[s.id]; const last = [...c.messages].reverse().find(m => m.r === 'a' && m.t && !m.err);
-    return `<button class="row-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span class="meta"><span class="t">${esc(s.title)}</span><br><span class="s">${esc((last ? last.t.replace(/\*/g,'') : '').slice(0,90))}</span></span></button>`;
+    return `<button class="row-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span class="meta"><span class="t">${esc(s.title)}</span><br><span class="s">${esc((last ? last.t.replace(/\*/g,'') : '').slice(0,90))}</span></span><span class="when">${esc(fmtChatDate(c.updated))}</span></button>`;
   }).join('') : '<p class="empty">Abhi koi chat nahi. Home se koi kahani chuno aur Chat shuru karo.</p>') + '</div>';
 }
 
@@ -620,7 +656,7 @@ function threadHtml(){
     if(m.err){ h += `<div class="err">${esc(m.err)}<div class="acts"><button class="pill-btn" data-a="retry">Dobara koshish</button><button class="pill-btn" data-a="settings">Settings</button></div></div>`; return; }
     if(!m.t){ h += `<div class="row"><div class="bub a typing" aria-label="Likh raha hai"><i></i><i></i><i></i></div></div>`; return; }
     h += `<div class="row" data-mid="${m.id}" data-kind="a"><div class="bub a">${fmt(m.t)}</div></div>
-      <div class="msgActs"><button data-a="contFrom" data-mid="${m.id}" aria-label="Kahani aage badhao" ${S.busy ? 'disabled' : ''}>${I.ff}</button><button data-a="regenFrom" data-mid="${m.id}" aria-label="Dobara banao" ${S.busy ? 'disabled' : ''}>${I.redo}</button></div>`;
+      <div class="msgActs"><button data-a="contFrom" data-mid="${m.id}" aria-label="Kahani aage badhao" ${S.busy ? 'disabled' : ''}>${I.ff}</button><button data-a="regenFrom" data-mid="${m.id}" aria-label="Dobara banao" ${S.busy ? 'disabled' : ''}>${I.redo}</button><button data-a="speakMsg" data-mid="${m.id}" aria-label="Awaaz mein suno" class="${S.speakingId === m.id ? 'on' : ''}">${I.speak}</button></div>`;
   });
   return h;
 }
@@ -781,16 +817,14 @@ let heroTimer = null;
 function stopHeroAuto(){ if(heroTimer){ clearInterval(heroTimer); heroTimer = null; } }
 function startHeroAuto(){
   const rail = document.querySelector('.herorail'); if(!rail || rail.children.length < 2) return;
-  let paused = false;
-  rail.addEventListener('pointerdown', () => { paused = true; }, {once:true});
   heroTimer = setInterval(() => {
-    if(paused || !document.body.contains(rail)){ stopHeroAuto(); return; }
+    if(!document.body.contains(rail)){ stopHeroAuto(); return; }
     const card = rail.firstElementChild; if(!card) return;
     const step = card.getBoundingClientRect().width + 14;
     const max = rail.scrollWidth - rail.clientWidth;
     const next = rail.scrollLeft + step >= max - 5 ? 0 : rail.scrollLeft + step;
     rail.scrollTo({left: next, behavior:'smooth'});
-  }, 1800);
+  }, 2000);
 }
 function go(view, extra){
   if(S.view === 'home' || S.view === 'search' || S.view === 'chats') S.scroll[S.view] = $('#screen').scrollTop;
@@ -938,7 +972,8 @@ function disconnectFb(){
   toast('Backend hata diya'); showOv('sheet', accountSection() + settingsButtons()); render();
 }
 async function doAuth(kind){
-  if(!FB.ready || S.authBusy) return;
+  if(S.authBusy) return;
+  if(!FB.ready){ toast('Backend abhi connect nahi hai. App poori tarah band karke dobara kholo.'); return; }
   const email = $('#accEmail').value.trim(), pass = $('#accPass').value;
   if(!email || pass.length < 6) return toast('Sahi email aur 6+ letters ka password daalo');
   S.authBusy = true;
@@ -1158,6 +1193,74 @@ function toggleMic(){
   r.onerror = ev => { toast(ev.error === 'not-allowed' ? 'Mic ki permission do' : 'Awaaz sun nahi paya'); };
   S.rec = r; try{ r.start(); }catch(e){ S.rec = null; } syncAct();
 }
+/* Message ko ladki ki awaaz mein padh kar sunana - phone ki apni built-in awaaz
+   use hoti hai (Web Speech API), bilkul free, koi key ya internet nahi chahiye. */
+let voiceCache = {}, voicesReady = false;
+function pickVoiceByGender(gender){
+  if(voiceCache[gender]) return voiceCache[gender];
+  const voices = speechSynthesis.getVoices();
+  if(!voices.length) return null;
+  const hi = voices.filter(v => /^hi/i.test(v.lang));
+  const pool = hi.length ? hi : voices.filter(v => /^en/i.test(v.lang));
+  const list = pool.length ? pool : voices;
+  let v;
+  if(gender === 'male') v = list.find(x => /male/i.test(x.name) && !/female/i.test(x.name)) || list.find(x => !/female|woman/i.test(x.name)) || list[0];
+  else v = list.find(x => /female|woman|women/i.test(x.name)) || list.find(x => !/\bmale\b/i.test(x.name)) || list[0];
+  voiceCache[gender] = v; return v;
+}
+function ensureVoices(){
+  return new Promise(resolve => {
+    if(speechSynthesis.getVoices().length){ voicesReady = true; resolve(); return; }
+    speechSynthesis.onvoiceschanged = () => { voicesReady = true; resolve(); };
+    setTimeout(resolve, 800);
+  });
+}
+async function elevenlabsSpeak(text, cfg){
+  const res = await fetch(cfg.base + '/' + cfg.voiceId, {
+    method:'POST', headers:{'Content-Type':'application/json', 'xi-api-key':cfg.key},
+    body: JSON.stringify({text, model_id:'eleven_multilingual_v2', voice_settings:{stability:0.35, similarity_boost:0.85, style:0.4, use_speaker_boost:true}})
+  });
+  if(!res.ok) throw new Error('Voice API error ' + res.status);
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
+}
+function stopSpeaking(){
+  if(S.audioEl){ try{ S.audioEl.pause(); }catch(e){} S.audioEl = null; }
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  S.speakingId = null;
+}
+async function speakMsg(mid){
+  if(S.speakingId === mid){ stopSpeaking(); paintMsgs(S.chatId); return; }
+  stopSpeaking();
+  const c = S.chats[S.chatId]; const m = c && c.messages.find(x => x.id === mid);
+  const text = (m ? m.t : '').replace(/\*/g, '').trim();
+  if(!text) return;
+  const localKey = (typeof store !== 'undefined' ? store.get('kcs.voiceKey', '') : '') || '';
+  const voiceCfg = localKey
+    ? {key:localKey, voiceId:(store.get('kcs.voiceId', '') || FIXED_VOICE.voiceId), base:FIXED_VOICE.base, kind:FIXED_VOICE.kind}
+    : (FIXED_VOICE.key ? FIXED_VOICE : null);
+  S.speakingId = mid; paintMsgs(S.chatId);
+  if(voiceCfg && voiceCfg.kind === 'elevenlabs'){
+    try{
+      const url = await elevenlabsSpeak(text, voiceCfg);
+      const audio = new Audio(url); S.audioEl = audio;
+      audio.onended = () => { S.speakingId = null; S.audioEl = null; paintMsgs(S.chatId); URL.revokeObjectURL(url); };
+      audio.onerror = () => { S.speakingId = null; S.audioEl = null; paintMsgs(S.chatId); toast('Awaaz load nahi ho payi'); URL.revokeObjectURL(url); };
+      await audio.play(); return;
+    }catch(e){ toast('Premium awaaz nahi mil payi, phone ki awaaz use kar rahe hain'); }
+  }
+  if(!('speechSynthesis' in window)){ S.speakingId = null; paintMsgs(S.chatId); toast('Is browser mein awaaz sunna support nahi hai'); return; }
+  await ensureVoices();
+  const gender = INFO.voiceGender || 'female';
+  const v = pickVoiceByGender(gender);
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = (v && v.lang) || 'hi-IN';
+  if(v) u.voice = v;
+  u.rate = INFO.voiceRate || 1; u.pitch = gender === 'male' ? 0.95 : 1.05;
+  u.onend = () => { S.speakingId = null; paintMsgs(S.chatId); };
+  u.onerror = () => { S.speakingId = null; paintMsgs(S.chatId); toast('Awaaz mein dikkat aayi'); };
+  speechSynthesis.speak(u);
+}
 
 /* ---------- portrait lock ---------- */
 function isLandscape(){
@@ -1225,7 +1328,7 @@ const ACT = {
   },
   hint: getHints,
   pickHint: el => { const i = $('#inp'); i.value = el.dataset.t; S.tray = null; paintTray(); autosize(); syncAct(); i.focus(); },
-  contFrom: el => contFrom(el.dataset.mid), regenFrom: el => regenFrom(el.dataset.mid),
+  contFrom: el => contFrom(el.dataset.mid), regenFrom: el => regenFrom(el.dataset.mid), speakMsg: el => speakMsg(el.dataset.mid),
   next: () => { if(S.busy) return; if(!S.set.key){ aiNotReady(); return; } const c = S.chats[S.chatId]; c.messages = c.messages.filter(m => !m.err); ai(S.chatId, NEXT_MSG); },
   retry: () => { const c = S.chats[S.chatId]; c.messages = c.messages.filter(m => !m.err); ai(S.chatId); },
   menu: openMenu,
@@ -1261,8 +1364,18 @@ const ACT = {
     if(!confirm('Ye message delete karna hai?')) return;
     const c = S.chats[S.chatId]; c.messages = c.messages.filter(x => x.id !== mid); saveChats(); paintMsgs(S.chatId, true);
   }); },
-  restart: () => closeOv(() => { if(S.busy) return; if(!confirm('Kahani shuru se start hogi. Purani chat hat jayegi. Aage badhein?')) return; S.chats[S.chatId] = {messages:[], updated:Date.now()}; saveChats(); render(); }),
-  delchat: () => closeOv(() => { if(S.busy) return; if(!confirm('Ye chat hamesha ke liye delete ho jayegi. Aage badhein?')) return; delete S.chats[S.chatId]; saveChats(); history.back(); })
+  restart: () => closeOv(() => {
+    if(S.busy) return;
+    if(!confirm('Kahani shuru se start hogi. Purani chat hat jayegi. Aage badhein?')) return;
+    const sp = showMiniSpinner();
+    setTimeout(() => { sp.remove(); S.chats[S.chatId] = {messages:[], updated:Date.now()}; saveChats(); render(); toast('Kahani restart ho gayi'); }, 900);
+  }),
+  delchat: () => closeOv(() => {
+    if(S.busy) return;
+    if(!confirm('Ye chat hamesha ke liye delete ho jayegi. Aage badhein?')) return;
+    const sp = showMiniSpinner();
+    setTimeout(() => { sp.remove(); delete S.chats[S.chatId]; saveChats(); history.back(); toast('Chat delete ho gayi'); }, 900);
+  })
 };
 document.addEventListener('click', e => {
   if(e.target === $('#sheet')){ closeOv(); return; }
