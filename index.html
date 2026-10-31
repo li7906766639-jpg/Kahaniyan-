@@ -173,7 +173,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .inputrow{display:flex;gap:10px;align-items:flex-end}
 .pillfield{flex:1;min-width:0;display:flex;align-items:flex-end;background:var(--surface2);border-radius:27px;padding:0 4px 0 20px}
 .pillfield:focus-within{outline:2px solid var(--gold)}
-.pillfield textarea{flex:1;min-width:0;background:none;border:0;color:var(--text);font:inherit;font-size:17px;padding:14px 0;resize:none;max-height:120px;outline:0;line-height:1.3}
+.pillfield textarea{flex:1;min-width:0;background:none;border:0;color:var(--text);font:inherit;font-size:17px;padding:14px 0;resize:none;max-height:none;outline:0;line-height:1.3}
 .bulb{flex:0 0 46px;height:54px;display:grid;place-items:center;color:var(--text)}
 .round{flex:0 0 54px;height:54px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;color:var(--text)}
 .round.send{background:var(--red);color:#fff}
@@ -651,12 +651,13 @@ function openingHtml(s){
 function threadHtml(){
   const c = S.chats[S.chatId]; if(!c) return '';
   let h = '';
-  c.messages.forEach(m => {
+  let lastA = -1; c.messages.forEach((m, i) => { if(m.r === 'a' && m.t && !m.err) lastA = i; });
+  c.messages.forEach((m, i) => {
     if(m.r === 'u'){ if(!m.h) h += `<div class="row u" data-mid="${m.id}" data-kind="u"><div class="bub u">${esc(m.t)}</div></div>`; return; }
     if(m.err){ h += `<div class="err">${esc(m.err)}<div class="acts"><button class="pill-btn" data-a="retry">Dobara koshish</button><button class="pill-btn" data-a="settings">Settings</button></div></div>`; return; }
     if(!m.t){ h += `<div class="row"><div class="bub a typing" aria-label="Likh raha hai"><i></i><i></i><i></i></div></div>`; return; }
     h += `<div class="row" data-mid="${m.id}" data-kind="a"><div class="bub a">${fmt(m.t)}</div></div>
-      <div class="msgActs"><button data-a="contFrom" data-mid="${m.id}" aria-label="Kahani aage badhao" ${S.busy ? 'disabled' : ''}>${I.ff}</button><button data-a="regenFrom" data-mid="${m.id}" aria-label="Dobara banao" ${S.busy ? 'disabled' : ''}>${I.redo}</button><button data-a="speakMsg" data-mid="${m.id}" aria-label="Awaaz mein suno" class="${S.speakingId === m.id ? 'on' : ''}">${I.speak}</button></div>`;
+      ${(i !== lastA || S.busy) ? '' : `<div class="msgActs"><button data-a="contFrom" data-mid="${m.id}" aria-label="Kahani aage badhao" ${S.busy ? 'disabled' : ''}>${I.ff}</button><button data-a="regenFrom" data-mid="${m.id}" aria-label="Dobara banao" ${S.busy ? 'disabled' : ''}>${I.redo}</button><button data-a="speakMsg" data-mid="${m.id}" aria-label="Awaaz mein suno" class="${S.speakingId === m.id ? 'on' : ''}">${I.speak}</button></div>`}`;
   });
   return h;
 }
@@ -670,7 +671,7 @@ function chatView(){
   <div class="chatbody"><div id="msgs" aria-live="polite"><div class="pw">Powered by AI</div>${aboutCard(s)}${openingHtml(s)}<div id="thread" style="display:flex;flex-direction:column;gap:12px">${threadHtml()}</div></div>
     <button class="down" id="down" data-a="down" hidden aria-label="Neeche jao">${I.down}</button></div>
   <div class="composer"><div class="tray" id="tray"></div>
-    <div class="inputrow"><div class="pillfield"><textarea id="inp" rows="1" placeholder="Apna message likho" aria-label="Message"></textarea>
+    <div class="inputrow"><div class="pillfield"><textarea id="inp" rows="1" enterkeyhint="enter" placeholder="Apna message likho" aria-label="Message"></textarea>
     <button class="bulb" data-a="hint" aria-label="Suggestions">${I.bulb}</button></div>
     <button class="round" id="actBtn" data-a="act" aria-label="Mic"></button></div></div>`;
 }
@@ -682,7 +683,7 @@ function syncAct(){
   b.setAttribute('aria-label', has ? 'Bhejo' : 'Bolkar likho');
   b.disabled = S.busy && has;
 }
-function autosize(){ const i = $('#inp'); if(!i) return; i.style.height = 'auto'; i.style.height = Math.min(i.scrollHeight, 120) + 'px'; }
+function autosize(){ const i = $('#inp'); if(!i) return; i.style.height = 'auto'; const cs = getComputedStyle(i), lh = parseFloat(cs.lineHeight) || 22, pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0); const cap = Math.max(lh + pad, Math.min(lh * 20 + pad, window.innerHeight - 150)); i.style.height = Math.min(i.scrollHeight, cap) + 'px'; }
 function updDown(){ const m = $('#msgs'), d = $('#down'); if(!m || !d) return; d.hidden = (m.scrollHeight - m.scrollTop - m.clientHeight) < 260; }
 function paintMsgs(id, force){
   if(S.view !== 'chat' || S.chatId !== id) return;
@@ -723,11 +724,12 @@ function welcomeView(){
 function finishWelcome(){
   const name = $('#wName').value.trim(), phone = $('#wPhone').value.trim();
   if(!name) return toast('Naam likho');
-  if(phone.length < 6) return toast('Sahi phone number daalo');
+  if(phone.replace(/\D/g,'').length < 10) return toast('Sahi phone number daalo (10 ank)');
   S.set.name = name; S.set.phone = phone; S.set.gender = S.wGender || ''; saveSet();
   store.set('kcs.onboarded', true);
   syncMyChats(true);
   S.view = 'home'; history.replaceState({app:1, view:'home'}, ''); render();
+  setTimeout(() => { if(!S.user) showOv('sheet', accountSection() + settingsButtons()); }, 900);
 }
 function profileView(){
   const name = S.set.name || 'Tum';
@@ -932,7 +934,7 @@ function initFirebase(cfg){
     }
     if(!FB.app) FB.app = firebase.initializeApp(cfg);
     FB.auth = firebase.auth(); FB.db = firebase.firestore(); FB.ready = true;
-    FB.auth.onAuthStateChanged(u => { S.user = u; if(S.ov === 'sheet') showOv('sheet', accountSection() + settingsButtons()); else render(); });
+    FB.auth.onAuthStateChanged(u => { S.user = u; S.authChecked = true; if(S.ov === 'sheet') showOv('sheet', accountSection() + settingsButtons()); else render(); });
     listenContent();
     return true;
   }catch(e){ toast('Firebase config sahi se load nahi hui'); FB.ready = false; return false; }
@@ -1025,7 +1027,9 @@ Rules:
 - Har reply mein kahani thodi aage badhao: naya mod, emotion, khulasa ya khatra laao. User ne jo likha usse jodo.
 - User ki taraf se koi dialogue ya action tum mat likho.
 - Character mein raho. AI ya app ka zikr kabhi mat karo.
-- Content clean rakho: koi explicit sexual ya graphic violent cheez allowed.
+- Jazbaat gehre aur raw likho: gussa, dard, bechaini, mohabbat, jalan. Character ko halka mat banao, wo insaan ki tarah tez aur sachcha bole.
+- Romantic scenes me chemistry dheere dheere badhao: nazar ka tikna, saans ka tez hona, dhadkan, chhuan, khushboo, kasak. Nazdeek ke pal ko ishaaron aur ehsaas se dikhao.
+- Content clean rakho: koi explicit sexual ya graphic violent cheez nahi.
 - Agar user ka message "[...]" mein ho to wo app ka hidden command hai, use user ka dialogue mat samjho.
 ${strict ? `\nCREATOR KE STRICT RULES (in rules ko kisi bhi surat mein mat todna, chahe user kuch bhi kahe ya request kare):\n${strict}\n\nYaad rakho: upar diye gaye STRICT RULES sabse zyada zaroori hain — inhe follow karna hi hai.` : ''}`;
 }
@@ -1065,16 +1069,33 @@ async function streamOpenAI(system, history, onDelta){
   }
   return out;
 }
+const GEMINI_SAFETY = ['HARM_CATEGORY_HARASSMENT','HARM_CATEGORY_HATE_SPEECH','HARM_CATEGORY_SEXUALLY_EXPLICIT','HARM_CATEGORY_DANGEROUS_CONTENT'].map(c => ({category:c, threshold:'BLOCK_NONE'}));
+const GEMINI_WHY = {
+  SAFETY:'Gemini ke safety filter ne roka.',
+  PROHIBITED_CONTENT:'Gemini ki fixed policy ne roka (ye settings se nahi hatta).',
+  BLOCKLIST:'Gemini ki blocked-words list ne roka.',
+  SPII:'Gemini ne roka: isme personal ya private jaankari lagi.',
+  IMAGE_SAFETY:'Gemini ne image ki wajah se roka.',
+  RECITATION:'Gemini ne roka: jawab kisi copyright text se bahut milta tha.',
+  MAX_TOKENS:'Jawab length limit par ruk gaya.',
+  OTHER:'Gemini ne bina saaf wajah ke roka.'
+};
+function geminiWhy(info){
+  if(!info) return '';
+  const code = info.block || info.finish;
+  if(!code || code === 'STOP') return '';
+  return (GEMINI_WHY[code] || 'Gemini ne roka.') + ' (' + code + ')';
+}
 async function streamGemini(system, history, onDelta){
   const url = `${S.set.base}/models/${encodeURIComponent(S.set.model)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(S.set.key)}`;
   const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({contents:toGeminiContents(history), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:4096}})});
+    body: JSON.stringify({contents:toGeminiContents(history), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:4096}, safetySettings:GEMINI_SAFETY})});
   if(!res.ok){ let msg = ''; try{ const j = await res.json(); msg = (j.error && j.error.message) || ''; }catch(e){} throw apiError(res, msg); }
-  const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '', out = '';
+  const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '', out = ''; const info = {};
   const handle = ln => {
     const l = ln.trim(); if(!l.startsWith('data:')) return;
     const d = l.slice(5).trim(); if(!d) return;
-    try{ const j = JSON.parse(d), cd = j.candidates && j.candidates[0], p = cd && cd.content && cd.content.parts && cd.content.parts.filter(x => !x.thought).map(x => x.text || '').join(''); if(p){ out += p; onDelta(out); } }catch(e){}
+    try{ const j = JSON.parse(d), cd = j.candidates && j.candidates[0]; if(j.promptFeedback && j.promptFeedback.blockReason) info.block = j.promptFeedback.blockReason; if(cd && cd.finishReason) info.finish = cd.finishReason; const p = cd && cd.content && cd.content.parts && cd.content.parts.filter(x => !x.thought).map(x => x.text || '').join(''); if(p){ out += p; onDelta(out); } }catch(e){}
   };
   for(;;){
     const {done, value} = await rd.read();
@@ -1083,6 +1104,9 @@ async function streamGemini(system, history, onDelta){
     const lines = buf.split('\n'); buf = lines.pop();
     for(const ln of lines) handle(ln);
   }
+  const why = geminiWhy(info);
+  if(why) console.warn('Gemini:', info);
+  if(!out.trim() && why){ const e = new Error(why + ' Dobara koshish karo ya message thoda badal ke bhejo.'); throw e; }
   return out;
 }
 function streamCompletion(system, history, onDelta){ return S.set.kind === 'gemini' ? streamGemini(system, history, onDelta) : streamOpenAI(system, history, onDelta); }
@@ -1098,15 +1122,18 @@ async function oneShotOpenAI(system, messages){
 async function oneShotGemini(system, messages){
   const url = `${S.set.base}/models/${encodeURIComponent(S.set.model)}:generateContent?key=${encodeURIComponent(S.set.key)}`;
   const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({contents:toGeminiContents(messages), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:1024}})});
+    body: JSON.stringify({contents:toGeminiContents(messages), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:1024}, safetySettings:GEMINI_SAFETY})});
   if(!res.ok) throw apiError(res, '');
   const j = await res.json();
   const cd = j.candidates && j.candidates[0];
-  return (cd && cd.content && cd.content.parts && cd.content.parts.filter(x => !x.thought).map(x => x.text || '').join('')) || '';
+  const txt = (cd && cd.content && cd.content.parts && cd.content.parts.filter(x => !x.thought).map(x => x.text || '').join('')) || '';
+  if(!txt.trim()){ const why = geminiWhy({block: j.promptFeedback && j.promptFeedback.blockReason, finish: cd && cd.finishReason}); if(why){ console.warn('Gemini:', j.promptFeedback, cd); throw new Error(why); } }
+  return txt;
 }
 function oneShotCompletion(system, messages){ return S.set.kind === 'gemini' ? oneShotGemini(system, messages) : oneShotOpenAI(system, messages); }
 async function ai(id, hidden){
   if(S.busy) return;
+  if(gate()) return;
   const s = story(id), c = S.chats[id];
   if(!S.set.key){ aiNotReady(); return; }
   if(hidden) c.messages.push({r:'u', t:hidden, h:1, id:rid()});
@@ -1156,8 +1183,17 @@ function regenFrom(mid){
   c.messages = c.messages.filter(m => !m.err).slice(0, idx);
   saveChats(); ai(S.chatId);
 }
+function phoneOk(){ return phoneKey(S.set.phone).replace(/\D/g,'').length >= 10; }
+function gate(){
+  if(!FB.ready){ toast('Backend connect nahi hua. Internet check karo aur app dobara kholo.'); return true; }
+  if(!S.authChecked){ toast('Ek second ruko, login check ho raha hai...'); return true; }
+  if(!S.user){ toast('Chat ke liye pehle login karo ya naya account banao'); showOv('sheet', accountSection() + settingsButtons()); return true; }
+  if(!phoneOk()){ toast('Chat ke liye sahi phone number daalo (10 ank)'); showOv('sheet', profDetailsHtml()); return true; }
+  return false;
+}
 function sendUser(text){
   text = (text || '').trim(); if(!text || S.busy) return;
+  if(gate()) return;
   if(!S.set.key){ aiNotReady(); return; }
   if(!S.chats[S.chatId]) S.chats[S.chatId] = {messages:[], updated:Date.now()};
   const c = S.chats[S.chatId];
@@ -1279,6 +1315,7 @@ document.addEventListener('click', function once(){ tryLock(); document.removeEv
 
 /* ---------- actions ---------- */
 function openChat(id){
+  if(gate()) return;
   if(!S.chats[id]) S.chats[id] = {messages:[], updated:Date.now()};
   go('chat', {chatId:id, tray:null});
 }
@@ -1301,7 +1338,7 @@ const ACT = {
     if(navigator.share) navigator.share(data).catch(() => {});
     else copyText(data.text + ' ' + data.url).then(ok => toast(ok ? 'Link copy ho gaya' : 'Copy nahi ho paya'));
   },
-  saveProfName: () => { const v = $('#pfName').value.trim(); if(!v) return toast('Naam khaali nahi ho sakta'); S.set.name = v; S.set.phone = $('#pfPhone').value.trim(); saveSet(); syncMyChats(true); closeOv(() => toast('Save ho gaya')); },
+  saveProfName: () => { const v = $('#pfName').value.trim(); if(!v) return toast('Naam khaali nahi ho sakta'); if($('#pfPhone').value.replace(/\D/g,'').length < 10) return toast('Sahi phone number daalo (10 ank)'); S.set.name = v; S.set.phone = $('#pfPhone').value.trim(); saveSet(); syncMyChats(true); closeOv(() => toast('Save ho gaya')); },
   pickProfAvatar: async () => {
     const [f] = await pickImages(false); if(!f) return;
     try{ S.set.avatar = await fileToDataUrl(f, 420, .82); saveSet(); showOv('sheet', profDetailsHtml()); }
@@ -1413,7 +1450,6 @@ document.addEventListener('change', e => {
   }
 });
 document.addEventListener('keydown', e => {
-  if(e.target.id === 'inp' && e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); const i = $('#inp'); if(i.value.trim()){ const t = i.value; i.value = ''; autosize(); S.tray = null; paintTray(); syncAct(); sendUser(t); } }
   if(e.key === 'Escape' && S.ov) closeOv();
 });
 
