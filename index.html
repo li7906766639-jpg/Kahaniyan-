@@ -88,7 +88,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .card .cover-sub{font-size:12.5px;margin-top:auto}
 .card b{display:block;margin-top:8px;font-size:15px}
 .card small{color:var(--muted);font-size:13px}
-.row-item{display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.row-item{position:relative;display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
 .row-item .when{flex:0 0 auto;align-self:flex-start;color:var(--muted);font-size:12.5px;white-space:nowrap;margin-left:6px}
 .row-item .cover{flex:0 0 70px;height:92px;border-radius:12px}
 .row-item .cover-sym{width:80%;left:10%;top:20%}
@@ -109,6 +109,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 #nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 9px;color:var(--muted);font-size:14px;font-weight:600}
 #nav button[aria-current="page"]{color:var(--text)}
 #nav.hide{display:none}
+#nav button{position:relative}
+.nbadge{position:absolute;top:4px;left:calc(50% + 6px);min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#e5232d;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+.nbadge[hidden]{display:none}
+.row-item .ubadge{position:absolute;right:2px;bottom:14px;min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:#e5232d;color:#fff;font-size:14px;font-weight:700;display:grid;place-items:center}
 
 .cbar{margin:10px 20px 0;padding:12px 14px;border-radius:14px;background:#2a1f10;border:1px solid #5a4218;color:#f3e2bd}
 .cbar b{display:block;margin-bottom:8px}
@@ -275,7 +279,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <nav id="nav" aria-label="Main">
     <button data-a="nav" data-v="home" aria-label="Home"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3z"/></svg>Home</button>
     <button data-a="nav" data-v="search" aria-label="Search"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>Search</button>
-    <button data-a="nav" data-v="chats" aria-label="Chats"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M21 3 3 10.5l7 2.5 2.5 7z"/></svg>Chats</button>
+    <button data-a="nav" data-v="chats" aria-label="Chats"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M21 3 3 10.5l7 2.5 2.5 7z"/></svg>Chats<span class="nbadge" id="navBadge" hidden></span></button>
   </nav>
   <div id="sheet" role="dialog" aria-modal="true"><div class="sheet-body" id="sheetBody"></div></div>
   <div id="menu" class="dropmenu" role="menu"></div>
@@ -298,6 +302,18 @@ const store = {
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
 function toast(m, ms){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), ms || 3600); }
+let __errAt = 0;
+function softFail(e){ try{ console.error(e); const n = Date.now(); if(n - __errAt > 4000){ __errAt = n; const m = String((e && ((e.code ? e.code + ': ' : '') + (e.message || e))) || 'error').slice(0, 110); toast('Kuch gadbad hui: ' + m, 7000); } }catch(_){} }
+window.addEventListener('error', e => softFail(e.error || (e.message + ' @' + e.lineno)));
+window.addEventListener('unhandledrejection', e => softFail(e.reason));
+setInterval(() => {
+  try{
+    if(S.busy && S.busyAt && Date.now() - S.busyAt > 180000){
+      S.busy = false; S.curMsgId = null; toast('Jawab bahut der se atka tha, dobara koshish karo');
+      if(S.chatId) paintMsgs(S.chatId, true); syncAct();
+    }
+  }catch(e){}
+}, 10000);
 function showMiniSpinner(){
   const el = document.createElement('div'); el.id = 'miniSpin'; el.innerHTML = '<div class="spinr"></div>';
   $('#app').appendChild(el); return el;
@@ -352,7 +368,7 @@ const SYM = {
   eye:'<path d="M8 50Q50 12 92 50Q50 88 8 50Z"/><circle cx="50" cy="50" r="12"/>',
   pin:'<path d="M50 90C18 62 14 40 30 28c10-7 20 0 20 8 0-8 10-15 20-8 16 12 12 34-20 62Z"/>'
 };
-const BLANK = { price:0, images:[], avatar:'', openImage:'', about:'', opening:'', persona:'', premise:'', sub:'', genre:'Roleplay', note:'', rules:'', createdAt:0 };
+const BLANK = { price:0, images:[], avatar:'', openImage:'', about:'', opening:'', persona:'', premise:'', sub:'', genre:'Roleplay', note:'', rules:'', gender:'', createdAt:0 };
 const BASE = [
   { id:'rani', rank:1, isNew:false, title:'Raat ki rani', sub:'Din mein masoom, raat mein khaufnaak', genre:'Mafia romance',
     c1:'#4a0f1f', c2:'#0e0709', glow:'#d4a24a', sym:'crown', hero:'Ayra Rathore',
@@ -385,7 +401,7 @@ const BASE = [
     about:'Parcel tumhara tha, magar khola kisi aur ne. Ab dono ke beech ek funny, pyaari nok-jhok shuru hone wali hai.',
     opening:'*Tumhare flat ki ghanti baji hai. Darwaze par ek ladki khadi hai, ek haath mein chai ka cup aur doosre mein aadha khula hua parcel.*\n\n*Uske baal clip mein atke hain aur aankhon ke neeche neend ke nishaan hain.*\n\nDekho, pehle ye bata do ki ye parcel tumhara hai ya nahi. Kyunki mujhe lagta hai maine galti se khol diya. Aur haan, uske andar jo hai wo kaafi... personal lag raha hai, {user}.\n\n*Meher sharminda muskaan ke saath tumhe parcel thama deti hai.*' }
 ].map(b => Object.assign({}, BLANK, b));
-const EDIT_FIELDS = ['title','sub','genre','hero','about','opening','persona','premise','price','images','avatar','openImage','note','rules'];
+const EDIT_FIELDS = ['title','sub','genre','hero','about','opening','persona','premise','price','images','avatar','openImage','note','rules','gender'];
 const PALETTES = [['#2a1246','#0a0612','#b48cf0','crown'],['#123a2a','#060d0a','#5fd39a','eye'],['#3d1a10','#0d0705','#f0a06a','arch'],['#0f2440','#050a12','#6fb1f0','paper'],['#3b1230','#0f060d','#f08ac4','pin']];
 /* App ki jaankari - ise apne hisaab se badal lo */
 const APP_INFO = {
@@ -511,13 +527,16 @@ const story = id => allStories().find(s => s.id === id);
 
 /* ---------- state ---------- */
 const S = {
-  view:'home', tab:'foryou', chatId:null, q:'', busy:false, ov:null, after:null, rec:null, tray:null, draft:null,
+  view:'home', tab:'foryou', chatId:null, q:'', busy:false, queue:[], curMsgId:null, ov:null, after:null, rec:null, tray:null, draft:null,
   creator: sessionStorage.getItem('kcs.creator') === '1', logoTaps:0, scroll:{}, user:null, authBusy:false, wGender:'', speakingId:null, audioEl:null,
   set: Object.assign({ key:'', base:'https://api.deepseek.com', model:'deepseek-chat', name:'Tum', theme:'dark', phone:'', gender:'', provider:'deepseek', kind:'openai', avatar:'' }, store.get('kcs.settings', {})),
-  chats: store.get('kcs2.chats', {})
+  chats: store.get('kcs2.chats', {}),
+  unread: store.get('kcs.unread', {})
 };
 if(FIXED_AI.base){ Object.assign(S.set, {base:FIXED_AI.base, model:FIXED_AI.model, kind:FIXED_AI.kind, key:FIXED_AI.key}); }
 let syncTimer = null;
+function saveUnread(){ store.set('kcs.unread', S.unread); }
+function updateBadges(){ const t = Object.keys(S.unread).filter(k => S.chats[k]).reduce((a, k) => a + (S.unread[k] || 0), 0); const b = $('#navBadge'); if(!b) return; b.textContent = t > 99 ? '99+' : String(t); b.hidden = t < 1; }
 function saveChats(){ store.set('kcs2.chats', S.chats); clearTimeout(syncTimer); syncTimer = setTimeout(() => syncMyChats(false), 1500); }
 function phoneKey(p){ return (p || '').replace(/[^\d+]/g, ''); }
 async function syncMyChats(now){
@@ -630,7 +649,7 @@ function chatsView(){
   const list = continueList();
   return header() + `<div class="pad"><h2 class="h2" style="margin-top:8px">Aapki chats</h2>` + (list.length ? list.map(s => {
     const c = S.chats[s.id]; const last = [...c.messages].reverse().find(m => m.r === 'a' && m.t && !m.err);
-    return `<button class="row-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span class="meta"><span class="t">${esc(s.title)}</span><br><span class="s">${esc((last ? last.t.replace(/\*/g,'') : '').slice(0,90))}</span></span><span class="when">${esc(fmtChatDate(c.updated))}</span></button>`;
+    return `<button class="row-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span class="meta"><span class="t">${esc(s.title)}</span><br><span class="s">${esc((last ? last.t.replace(/\*/g,'') : '').slice(0,90))}</span></span><span class="when">${esc(fmtChatDate(c.updated))}</span>${S.unread[s.id] > 0 ? `<span class="ubadge">${S.unread[s.id] > 99 ? '99+' : S.unread[s.id]}</span>` : ''}</button>`;
   }).join('') : '<p class="empty">Abhi koi chat nahi. Home se koi kahani chuno aur Chat shuru karo.</p>') + '</div>';
 }
 
@@ -681,7 +700,7 @@ function syncAct(){
   b.className = 'round' + (S.rec ? ' rec' : has ? ' send' : '');
   b.innerHTML = has && !S.rec ? I.send : I.mic;
   b.setAttribute('aria-label', has ? 'Bhejo' : 'Bolkar likho');
-  b.disabled = S.busy && has;
+  b.disabled = false;
 }
 function autosize(){ const i = $('#inp'); if(!i) return; i.style.height = 'auto'; const cs = getComputedStyle(i), lh = parseFloat(cs.lineHeight) || 22, pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0); const cap = Math.max(lh + pad, Math.min(lh * 20 + pad, window.innerHeight - 150)); i.style.height = Math.min(i.scrollHeight, cap) + 'px'; }
 function updDown(){ const m = $('#msgs'), d = $('#down'); if(!m || !d) return; d.hidden = (m.scrollHeight - m.scrollTop - m.clientHeight) < 260; }
@@ -792,7 +811,12 @@ function legalSheet(title, text){ openOv('sheet', `<h2>${esc(title)}</h2><p styl
 
 /* ---------- render ---------- */
 function render(){
+  try{ renderInner(); }catch(e){ softFail(e); if(S.view !== 'home'){ S.view = 'home'; try{ renderInner(); }catch(e2){ softFail(e2); } } }
+}
+function renderInner(){
   stopHeroAuto();
+  if(S.view === 'chat' && S.unread[S.chatId]){ S.unread[S.chatId] = 0; saveUnread(); }
+  setTimeout(updateBadges, 0);
   const sc = $('#screen'), nav = $('#nav');
   if(!store.get('kcs.onboarded', false) && S.view !== 'welcome'){ S.view = 'welcome'; }
   if(S.view === 'welcome'){
@@ -933,7 +957,7 @@ function initFirebase(cfg){
       toast(why); return false;
     }
     if(!FB.app) FB.app = firebase.initializeApp(cfg);
-    FB.auth = firebase.auth(); FB.db = firebase.firestore(); FB.ready = true;
+    FB.auth = firebase.auth(); FB.db = firebase.firestore(); try{ FB.db.settings({experimentalForceLongPolling:true}); }catch(e){} FB.ready = true;
     FB.auth.onAuthStateChanged(u => { S.user = u; S.authChecked = true; if(S.ov === 'sheet') showOv('sheet', accountSection() + settingsButtons()); else render(); });
     listenContent();
     return true;
@@ -989,11 +1013,37 @@ async function doAuth(kind){
     toast(m || ('Kuch galat ho gaya (' + (e.code || 'error') + '), dobara try karo'));
   }finally{ S.authBusy = false; showOv('sheet', accountSection() + settingsButtons()); const ei = $('#accEmail'); if(ei) ei.value = email; }
 }
+async function doGoogle(){
+  if(S.authBusy) return;
+  if(!FB.ready){ toast('Backend abhi connect nahi hai. App poori tarah band karke dobara kholo.'); return; }
+  S.authBusy = true;
+  try{
+    const prov = new firebase.auth.GoogleAuthProvider();
+    prov.setCustomParameters({prompt:'select_account'});
+    let cred;
+    try{ cred = await FB.auth.signInWithPopup(prov); }
+    catch(e){
+      if(e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment'){ await FB.auth.signInWithRedirect(prov); return; }
+      throw e;
+    }
+    if(cred && cred.user){
+      S.user = cred.user;
+      if(cred.user.email) store.set('kcs.lastEmail', cred.user.email);
+      try{ if(!S.set.name && cred.user.displayName){ S.set.name = cred.user.displayName; saveSet(); } }catch(_){}
+      toast('Google se login ho gaya');
+    }
+  }catch(e){
+    const m = {'auth/popup-closed-by-user':'Login beech me band kar diya.', 'auth/cancelled-popup-request':'', 'auth/unauthorized-domain':'Ye website Firebase me authorized nahi hai. Firebase Console me Authentication, Settings, Authorized domains me is website ko jodo.', 'auth/operation-not-allowed':'Firebase me Google login abhi on nahi hai (Authentication, Sign-in method, Google).', 'auth/network-request-failed':'Internet check karo.'}[e.code];
+    if(m !== '') toast(m || ('Kuch galat ho gaya (' + (e.code || 'error') + '), dobara try karo'), 5000);
+  }finally{ S.authBusy = false; showOv('sheet', accountSection() + settingsButtons()); }
+}
 function doLogout(){ if(FB.auth) FB.auth.signOut(); }
 function accountSection(){
   if(!FB.ready) return `<h2>Account</h2><p style="color:var(--muted)">Abhi connect nahi hai.</p>`;
   if(!S.user){
     return `<h2>Account</h2><p>Apna account banao ya login karo.</p>
+      <button class="btn" data-a="google" ${S.authBusy ? 'disabled' : ''}>Google se login karo</button>
+      <p style="color:var(--muted);margin:12px 0 4px">ya email aur password se:</p>
       <div class="notice on">Pehli baar is email se ho to <b>"Naya account banao"</b> dabao. Sirf pehle se bane account ke liye <b>"Login karo"</b> use karo.</div>
       <div class="field"><label for="accEmail">Email</label><input id="accEmail" type="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="${esc(store.get('kcs.lastEmail', ''))}"></div>
       <div class="field"><label for="accPass">Password</label><div class="pwrow"><input id="accPass" type="password" autocomplete="current-password"><button type="button" class="eyeBtn" data-a="togglePw" aria-label="Password dikhao">${I.eye}</button></div></div>
@@ -1010,22 +1060,25 @@ function settingsButtons(){
 /* ---------- editor actions ---------- */
 
 /* ---------- AI (DeepSeek) ---------- */
-function systemPrompt(s){
+function systemPrompt(s, c){
   const strict = (s.rules || '').trim();
   return `Tum "Kahaniyon Chat Story" app ke roleplay engine ho.
 Story: ${s.title} (${s.genre}).
 Setting: ${s.premise || s.about}
 Jo character tum nibhate ho: ${s.hero}. ${s.persona}
+${s.gender === 'ladka' ? 'Tumhara character ek LADKA (purush) hai. Apne liye hamesha purush roop me bolo: "main aa raha hoon", "maine kaha", "main thaka hua hoon", "mera". Apne liye kabhi "rahi", "gayi", "thi", "meri" jaisa striling mat likho. Soch, baat karne ka andaaz aur harkatein ladke jaisi rakho.' : s.gender === 'ladki' ? 'Tumhara character ek LADKI (stri) hai. Apne liye hamesha stri roop me bolo: "main aa rahi hoon", "maine kaha", "main thaki hui hoon", "meri". Apne liye kabhi "raha", "gaya", "tha", "mera" jaisa purush ling mat likho. Soch, baat karne ka andaaz aur harkatein ladki jaisi rakho.' : 'Character ka gender uske naam aur description se samjho, aur apne liye Hindi ka ling (gender) hamesha wahi rakho, kahin galat mat badlo.'}
 User ka naam "${S.set.name}" hai aur wo kahani ka hero/heroine hai.
 
 Kahani ka pehla message creator ne likha hai (conversation ka pehla assistant message). Uske tone, setting aur mood ko follow karke kahani aage badhao.
 
-Rules:
+${c && c.memory ? 'Ab tak ki kahani ki yaad (ye sab ho chuka hai, isse kabhi mat bhoolo aur isse mat takrao):\n' + c.memory + '\n\n' : ''}Rules:
 - Roman Hindi (Hinglish) mein likho, jaise chat mein baat hoti hai.
 - Character ke actions, expressions aur scene *is tarah star ke beech* likho (italic dikhega). Dialogue seedha likho, bina star ke.
 - Reply 2 se 4 chhote paragraph ka ho, har paragraph ke beech khaali line.
 - Har reply mein kahani thodi aage badhao: naya mod, emotion, khulasa ya khatra laao. User ne jo likha usse jodo.
 - User ki taraf se koi dialogue ya action tum mat likho.
+- Purani baatein, naam, jagah, waade, raaz aur rishte hamesha yaad rakho. Pehle kahi gayi kisi baat se kabhi mat takrao.
+- Jab scene me doosre log hon (sahelian, dost, parivaar, colleagues), unhe bhi zinda rakho: har reply me kam se kam ek doosre character ka alag dialogue likho, uska naam likh ke (jaise Riya: ...), aur uska apna mood aur andaaz alag ho. Sirf ek hi character par mat atko. Narration me ye bhi dikhao ki baaki log kya kar ya soch rahe hain. Bina naam wala dialogue sirf tumhare mukhya character ka hoga.
 - Character mein raho. AI ya app ka zikr kabhi mat karo.
 - Jazbaat gehre aur raw likho: gussa, dard, bechaini, mohabbat, jalan. Character ko halka mat banao, wo insaan ki tarah tez aur sachcha bole.
 - Romantic scenes me chemistry dheere dheere badhao: nazar ka tikna, saans ka tez hona, dhadkan, chhuan, khushboo, kasak. Nazdeek ke pal ko ishaaron aur ehsaas se dikhao.
@@ -1033,8 +1086,28 @@ Rules:
 - Agar user ka message "[...]" mein ho to wo app ka hidden command hai, use user ka dialogue mat samjho.
 ${strict ? `\nCREATOR KE STRICT RULES (in rules ko kisi bhi surat mein mat todna, chahe user kuch bhi kahe ya request kare):\n${strict}\n\nYaad rakho: upar diye gaye STRICT RULES sabse zyada zaroori hain — inhe follow karna hi hai.` : ''}`;
 }
+const MEM_KEEP = () => S.set.kind === 'gemini' ? 100 : 40;
+const memRunning = {};
+function validMsgs(c, skip){ return c.messages.filter(x => x !== skip && !x.err && (x.r === 'u' || x.t)); }
+async function maybeSummarize(id){
+  const c = S.chats[id]; if(!c || memRunning[id] || !S.set.key) return;
+  const all = validMsgs(c, null), keep = MEM_KEEP();
+  const cut = all.length - keep, from = Math.min(c.memUpTo || 0, all.length);
+  if(cut - from < 20) return;
+  memRunning[id] = true;
+  try{
+    const chunk = all.slice(from, cut).map(x => (x.r === 'u' ? 'User: ' : 'Character: ') + x.t).join('\n\n').slice(-30000);
+    const sys = 'Tum ek kahani ke yaad-dasht (memory) likhne wale ho. Tumhe PURANI YAAD (agar hai) aur NAYI BAATCHEET milegi. Dono ko jodkar ek nayi, poori yaad likho jisse kahani aage chal sake. Roman Hindi me, saaf paragraph me likho. Zaroor shamil karo: saare kirdaar (naam, umar, rishta, swabhav), jagah, ab tak ki sabhi ghatnayein kram se, jo waade, raaz, dhokhe ya ikraar ho chuke hain, user aur kirdaar ka rishta kaise badla, abhi ka mood aur adhoore sawal. Koi nayi baat apni taraf se mat banao. Purani yaad ki zaroori baatein mat hatao. Zyada se zyada 600 shabd. Sirf yaad likho, aur kuch nahi.';
+    const txt = await oneShotCompletion(sys, [{role:'user', content:'PURANI YAAD:\n' + (c.memory || '(abhi koi nahi)') + '\n\nNAYI BAATCHEET:\n' + chunk}], 3000);
+    if(txt && txt.trim().length > 40){ c.memory = txt.trim(); c.memUpTo = cut; saveChats(); }
+  }catch(e){ console.warn('memory', e); }
+  memRunning[id] = false;
+}
 function buildHistory(s, c, skip){
-  const past = c.messages.filter(x => x !== skip && !x.err && (x.r === 'u' || x.t)).slice(-24).map(x => ({role: x.r === 'u' ? 'user' : 'assistant', content: x.t}));
+  const all = validMsgs(c, skip), keep = MEM_KEEP();
+  let from = Math.min(c.memUpTo || 0, Math.max(0, all.length - keep));
+  from = Math.max(from, all.length - (keep + 60), 0);
+  const past = all.slice(from).map(x => ({role: x.r === 'u' ? 'user' : 'assistant', content: x.t}));
   const op = (s.opening || '').replace(/\{user\}/g, S.set.name) || '*Kahani shuru hoti hai.*';
   return [{role:'user', content:'[Chat shuru]'}, {role:'assistant', content:op}, ...past];
 }
@@ -1051,14 +1124,14 @@ function toGeminiContents(history){ return history.map(m => ({role: m.role === '
 async function streamOpenAI(system, history, onDelta){
   const res = await fetch(S.set.base + '/chat/completions', {
     method:'POST', headers:Object.assign({'Content-Type':'application/json', 'Authorization':'Bearer ' + S.set.key}, extraHeaders()),
-    body: JSON.stringify({model:S.set.model, stream:true, temperature:1.1, max_tokens:1200, messages:[{role:'system', content:system}, ...history]})
+    body: JSON.stringify({model:S.set.model, stream:true, temperature:1.1, max_tokens:2500, messages:[{role:'system', content:system}, ...history]})
   });
   if(!res.ok){ let msg = ''; try{ const j = await res.json(); msg = (j.error && j.error.message) || ''; }catch(e){} throw apiError(res, msg); }
-  const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '', out = '';
+  const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '', out = '', fin = '', sawDone = false;
   const handle = ln => {
     const l = ln.trim(); if(!l.startsWith('data:')) return;
-    const d = l.slice(5).trim(); if(!d || d === '[DONE]') return;
-    try{ const j = JSON.parse(d), p = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content; if(p){ out += p; onDelta(out); } }catch(e){}
+    const d = l.slice(5).trim(); if(!d) return; if(d === '[DONE]'){ sawDone = true; return; }
+    try{ const j = JSON.parse(d), ch = j.choices && j.choices[0], p = ch && ch.delta && ch.delta.content; if(ch && ch.finish_reason) fin = ch.finish_reason; if(p){ out += p; onDelta(out); } }catch(e){}
   };
   for(;;){
     const {done, value} = await rd.read();
@@ -1067,6 +1140,7 @@ async function streamOpenAI(system, history, onDelta){
     const lines = buf.split('\n'); buf = lines.pop();
     for(const ln of lines) handle(ln);
   }
+  LAST_TRUNC = out.trim() ? (fin ? (fin === 'stop' ? '' : fin) : (sawDone ? '' : 'CONNECTION')) : '';
   return out;
 }
 const GEMINI_SAFETY = ['HARM_CATEGORY_HARASSMENT','HARM_CATEGORY_HATE_SPEECH','HARM_CATEGORY_SEXUALLY_EXPLICIT','HARM_CATEGORY_DANGEROUS_CONTENT'].map(c => ({category:c, threshold:'BLOCK_NONE'}));
@@ -1089,7 +1163,7 @@ function geminiWhy(info){
 async function streamGemini(system, history, onDelta){
   const url = `${S.set.base}/models/${encodeURIComponent(S.set.model)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(S.set.key)}`;
   const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({contents:toGeminiContents(history), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:4096}, safetySettings:GEMINI_SAFETY})});
+    body: JSON.stringify({contents:toGeminiContents(history), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:8192}, safetySettings:GEMINI_SAFETY})});
   if(!res.ok){ let msg = ''; try{ const j = await res.json(); msg = (j.error && j.error.message) || ''; }catch(e){} throw apiError(res, msg); }
   const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '', out = ''; const info = {};
   const handle = ln => {
@@ -1104,25 +1178,40 @@ async function streamGemini(system, history, onDelta){
     const lines = buf.split('\n'); buf = lines.pop();
     for(const ln of lines) handle(ln);
   }
+  LAST_TRUNC = out.trim() ? (!info.finish ? 'CONNECTION' : (info.finish === 'STOP' ? '' : info.finish)) : '';
   const why = geminiWhy(info);
   if(why) console.warn('Gemini:', info);
   if(!out.trim() && why){ const e = new Error(why + ' Dobara koshish karo ya message thoda badal ke bhejo.'); throw e; }
   return out;
 }
-function streamCompletion(system, history, onDelta){ return S.set.kind === 'gemini' ? streamGemini(system, history, onDelta) : streamOpenAI(system, history, onDelta); }
-async function oneShotOpenAI(system, messages){
+let LAST_TRUNC = '';
+async function streamCompletion(system, history, onDelta){
+  const run = (h, cb) => S.set.kind === 'gemini' ? streamGemini(system, h, cb) : streamOpenAI(system, h, cb);
+  let out = await run(history, onDelta), cut = LAST_TRUNC;
+  for(let i = 0; i < 2 && out.trim() && cut; i++){
+    const base = out;
+    const h2 = history.concat([{role:'assistant', content: base}, {role:'user', content:'(Tumhara jawab beech me ruk gaya tha. Bilkul wahin se aage likho jahan ruke the, kuch dohrao mat, aur jawab poora karo. Is line ka zikr mat karo.)'}]);
+    let more = '';
+    try{ more = await run(h2, t => onDelta(base + t)); }catch(e){ break; }
+    if(!more.trim()) break;
+    out = base + more; cut = LAST_TRUNC;
+  }
+  if(cut && out.trim()) toast('Jawab adhura ruk gaya (' + (cut === 'CONNECTION' ? 'network beech me kat gaya' : cut) + '). Continue button dabake aage badha sakte ho.', 5000);
+  return out;
+}
+async function oneShotOpenAI(system, messages, maxTok){
   const res = await fetch(S.set.base + '/chat/completions', {
     method:'POST', headers:Object.assign({'Content-Type':'application/json', 'Authorization':'Bearer ' + S.set.key}, extraHeaders()),
-    body: JSON.stringify({model:S.set.model, stream:false, temperature:1.1, max_tokens:200, messages:[{role:'system', content:system}, ...messages]})
+    body: JSON.stringify({model:S.set.model, stream:false, temperature:1.1, max_tokens:maxTok || 200, messages:[{role:'system', content:system}, ...messages]})
   });
   if(!res.ok) throw apiError(res, '');
   const j = await res.json();
   return (j.choices && j.choices[0] && j.choices[0].message.content) || '';
 }
-async function oneShotGemini(system, messages){
+async function oneShotGemini(system, messages, maxTok){
   const url = `${S.set.base}/models/${encodeURIComponent(S.set.model)}:generateContent?key=${encodeURIComponent(S.set.key)}`;
   const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({contents:toGeminiContents(messages), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:1024}, safetySettings:GEMINI_SAFETY})});
+    body: JSON.stringify({contents:toGeminiContents(messages), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:maxTok || 1024}, safetySettings:GEMINI_SAFETY})});
   if(!res.ok) throw apiError(res, '');
   const j = await res.json();
   const cd = j.candidates && j.candidates[0];
@@ -1130,7 +1219,7 @@ async function oneShotGemini(system, messages){
   if(!txt.trim()){ const why = geminiWhy({block: j.promptFeedback && j.promptFeedback.blockReason, finish: cd && cd.finishReason}); if(why){ console.warn('Gemini:', j.promptFeedback, cd); throw new Error(why); } }
   return txt;
 }
-function oneShotCompletion(system, messages){ return S.set.kind === 'gemini' ? oneShotGemini(system, messages) : oneShotOpenAI(system, messages); }
+function oneShotCompletion(system, messages, maxTok){ return S.set.kind === 'gemini' ? oneShotGemini(system, messages, maxTok) : oneShotOpenAI(system, messages, maxTok); }
 async function ai(id, hidden){
   if(S.busy) return;
   if(gate()) return;
@@ -1138,12 +1227,13 @@ async function ai(id, hidden){
   if(!S.set.key){ aiNotReady(); return; }
   if(hidden) c.messages.push({r:'u', t:hidden, h:1, id:rid()});
   const m = {r:'a', t:'', id:rid()}; c.messages.push(m);
+  S.curMsgId = m.id; S.busyAt = Date.now();
   S.busy = true; c.updated = Date.now(); S.tray = null; paintTray(); paintMsgs(id, true);
   const history = buildHistory(s, c, m);
   const MAX_TRY = 5, BACKOFF = [1500, 3000, 5000, 8000];
   for(let attempt = 0; attempt < MAX_TRY; attempt++){
     try{
-      const full = await streamCompletion(systemPrompt(s), history, txt => { m.t = txt; paintMsgs(id); });
+      const full = await streamCompletion(systemPrompt(s, c), history, txt => { m.t = txt; paintMsgs(id); });
       if(!full.trim()) throw new Error('AI ne kuch nahi likha. Dobara koshish karo.');
       m.t = full; m.err = null; break;
     }catch(e){
@@ -1158,7 +1248,14 @@ async function ai(id, hidden){
     }
   }
   m.retrying = false;
-  S.busy = false; c.updated = Date.now(); saveChats(); paintMsgs(id);
+  S.busy = false; S.curMsgId = null; c.updated = Date.now(); saveChats(); paintMsgs(id); syncAct();
+  if(!m.err && (m.t || '').trim() && !(S.view === 'chat' && S.chatId === id)){
+    S.unread[id] = (S.unread[id] || 0) + 1; saveUnread(); updateBadges();
+    if(S.view === 'chats'){ const sc = $('#screen'), st = sc.scrollTop; render(); sc.scrollTop = st; }
+  }
+  maybeSummarize(id);
+  const nx = S.queue.shift();
+  if(nx && S.chats[nx]){ S.chats[nx].messages = S.chats[nx].messages.filter(x => !x.err); setTimeout(() => ai(nx), 80); }
 }
 function truncateAfter(mid){
   const c = S.chats[S.chatId]; if(!c) return -1;
@@ -1192,13 +1289,14 @@ function gate(){
   return false;
 }
 function sendUser(text){
-  text = (text || '').trim(); if(!text || S.busy) return;
+  text = (text || '').trim(); if(!text) return;
   if(gate()) return;
   if(!S.set.key){ aiNotReady(); return; }
   if(!S.chats[S.chatId]) S.chats[S.chatId] = {messages:[], updated:Date.now()};
   const c = S.chats[S.chatId];
   c.messages = c.messages.filter(m => !m.err);
-  c.messages.push({r:'u', t:text, id:rid()}); saveChats(); bumpPopularity(S.chatId); ai(S.chatId);
+  c.messages.push({r:'u', t:text, id:rid()}); saveChats(); bumpPopularity(S.chatId);
+  if(S.busy){ if(!S.queue.includes(S.chatId)) S.queue.push(S.chatId); paintMsgs(S.chatId, true); } else ai(S.chatId);
 }
 async function getHints(){
   const id = S.chatId, s = story(id); if(S.busy) return;
@@ -1207,7 +1305,7 @@ async function getHints(){
   const c = S.chats[id] || {messages:[]};
   S.tray = {loading:true, items:[]}; paintTray();
   try{
-    const text = await oneShotCompletion(systemPrompt(s), [...buildHistory(s, c, null),
+    const text = await oneShotCompletion(systemPrompt(s, c), [...buildHistory(s, c, null),
       {role:'user', content:'[HINT] Ab user ke liye 3 alag chhote reply suggest karo (har ek 12 shabdon se kam, user ki taraf se, dialogue ya *action*). Har suggestion nayi line par, bina number ya prefix ke. Sirf 3 lines.'}]);
     const items = text.split('\n').map(x => x.replace(/^\s*(?:[-•\d.)]+\s*)/, '').replace(/^["“]|["”]$/g, '').trim()).filter(Boolean).slice(0, 3);
     if(S.chatId === id && S.tray) S.tray = {loading:false, items};
@@ -1352,7 +1450,7 @@ const ACT = {
     else toast('Abhi login nahi hai. "Account setting" mein backend jodkar login karo.');
   },
   closeOv: () => closeOv(),
-  connectFb, disconnectFb, login: () => doAuth('login'), signup: () => doAuth('signup'),
+  connectFb, disconnectFb, login: () => doAuth('login'), signup: () => doAuth('signup'), google: () => doGoogle(),
   togglePw: el => { const i = $('#accPass'); if(!i) return; const on = i.type === 'password'; i.type = on ? 'text' : 'password'; el.classList.toggle('on', on); },
   full: goFull,
   theme: () => { S.set.theme = S.set.theme === 'dark' ? 'light' : 'dark'; saveSet(); applyTheme(); const b = document.querySelector('[data-a="theme"]'); if(b) b.innerHTML = S.set.theme === 'dark' ? I.sun : I.moon; },
@@ -1398,6 +1496,7 @@ const ACT = {
     closeOv(() => toast(ok ? 'Copy ho gaya' : 'Copy nahi ho paya. Phone ki clipboard permission check karo.'));
   },
   delMsg: el => { const mid = el.dataset.mid; closeOv(() => {
+    if(S.busy && mid === S.curMsgId){ toast('Jawab abhi likha ja raha hai, thodi der ruko'); return; }
     if(!confirm('Ye message delete karna hai?')) return;
     const c = S.chats[S.chatId]; c.messages = c.messages.filter(x => x.id !== mid); saveChats(); paintMsgs(S.chatId, true);
   }); },
@@ -1423,7 +1522,7 @@ document.addEventListener('click', e => {
 let holdTimer = null, holdEl = null, holdX = 0, holdY = 0;
 function holdCancel(){ if(holdTimer){ clearTimeout(holdTimer); holdTimer = null; } if(holdEl){ holdEl.classList.remove('pressed'); holdEl = null; } }
 document.getElementById('app').addEventListener('pointerdown', e => {
-  const row = e.target.closest('#msgs [data-mid]'); if(!row || S.busy) return;
+  const row = e.target.closest('#msgs [data-mid]'); if(!row) return;
   holdEl = row.querySelector('.bub') || row; holdX = e.clientX; holdY = e.clientY;
   holdTimer = setTimeout(() => { if(holdEl){ holdEl.classList.add('pressed'); if(navigator.vibrate) navigator.vibrate(12); openMsgMenu(row); } holdTimer = null; }, 480);
 });
