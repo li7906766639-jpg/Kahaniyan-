@@ -13,9 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Yatra+One&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js" onerror="window.__fbLoadFailed=true"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js" onerror="window.__fbLoadFailed=true"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js" onerror="window.__fbLoadFailed=true"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js" crossorigin="anonymous" onerror="window.__fbLoadFailed=true"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js" crossorigin="anonymous" onerror="window.__fbLoadFailed=true"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js" crossorigin="anonymous" onerror="window.__fbLoadFailed=true"></script>
 <style>
 :root,[data-theme="dark"]{
   --bg:#0d0d0f; --surface:#19191c; --surface2:#23262d; --line:#2a2a2f; --text:#f5f2ee; --muted:#8d8b89;
@@ -80,6 +80,29 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .rail-item .cover-sym{width:70%;left:15%;top:15%;opacity:.5}
 .rail-item span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;font-weight:600;line-height:1.25}
 .empty{color:var(--muted);font-size:15px;padding:6px 0}
+.top .right{display:flex;align-items:center;gap:10px}
+.coinchip{display:flex;align-items:center;gap:7px;height:38px;padding:0 13px 0 6px;border-radius:99px;background:var(--surface);border:1px solid var(--line);font-weight:700;font-size:16px}
+.coinchip .coin{width:26px;height:26px;font-size:14px;border-width:2px}
+.herorail .hero{flex:0 0 100%;aspect-ratio:7/8}
+.hero .hero-t{font-size:17px;font-weight:700;margin-bottom:10px;text-shadow:0 1px 8px rgba(0,0,0,.75)}
+.sechead{display:flex;align-items:center;justify-content:space-between;margin:28px 0 14px}
+.sechead h2{margin:0;font-size:22px;font-weight:700}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px 14px}
+.pcard{text-align:left;display:block;min-width:0}
+.pcard .cover{aspect-ratio:3/4;border-radius:16px;padding:12px;display:flex;flex-direction:column}
+.pcard .cover-title{font-size:22px}
+.pcard .cover-sub{font-size:12px;margin-top:auto}
+.pcard b{display:block;margin-top:9px;font-size:16px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcard small{color:var(--muted);font-size:13.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cnt{position:absolute;right:8px;bottom:8px;display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:8px;background:rgba(20,20,22,.8);color:#fff;font-size:12.5px;font-weight:700}
+.rank10{position:absolute;left:8px;bottom:0;font-size:70px;font-weight:900;line-height:1;color:var(--red);-webkit-text-stroke:2px rgba(255,255,255,.92);text-shadow:0 3px 10px rgba(0,0,0,.5)}
+.viewall{width:100%;height:50px;margin-top:20px;border-radius:99px;background:#2a1414;border:1px solid var(--red-dim);color:#f5d9d6;font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;gap:6px}
+[data-theme="light"] .viewall{background:#fbe9e7;color:#7a1f1d}
+.gtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 10px}
+.gtile{text-align:center;min-width:0}
+.gtile .cover{aspect-ratio:1/1.1;border-radius:14px}
+.gtile span{display:block;margin-top:6px;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .card{text-align:left}
@@ -112,6 +135,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 #nav button{position:relative}
 .nbadge{position:absolute;top:4px;left:calc(50% + 6px);min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#e5232d;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
 .nbadge[hidden]{display:none}
+.row-item.chat-row{padding:12px 0;border-bottom:0;gap:14px}
+.row-item.chat-row .cover{flex:0 0 68px;width:68px;height:68px;border-radius:50%}
+.row-item.chat-row .cover-sym{width:70%;left:15%;top:15%}
+.row-item.chat-row .meta{display:flex;flex-direction:column;gap:4px;min-width:0}
+.row-item.chat-row .t{display:block;font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-item.chat-row .p{display:block;font-size:15px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-item.chat-row.unr .p{color:var(--text)}
+.row-item.chat-row .when{margin-top:4px}
+.row-item.chat-row .ubadge{bottom:16px}
 .row-item .ubadge{position:absolute;right:2px;bottom:14px;min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:#e5232d;color:#fff;font-size:14px;font-weight:700;display:grid;place-items:center}
 
 .cbar{margin:10px 20px 0;padding:12px 14px;border-radius:14px;background:#2a1f10;border:1px solid #5a4218;color:#f3e2bd}
@@ -600,12 +632,20 @@ function cv(s, cls, inner, kind, attrs){
 const coverTitle = s => `<div class="cover-title">${esc(s.title)}</div><div class="cover-sub">${esc(s.sub)}</div>`;
 
 /* ---------- home / search / chats views ---------- */
-const TABS = [['foryou','For you'],['new','New release'],['top','Top rank'],['story','Story']];
-const header = () => `<header class="top"><h1 class="logo">kahaniyon</h1><button class="avatar-btn" data-a="profile" aria-label="Profile">${I.user}</button></header>`;
+const GENRES = [
+  ['fantasy', 'Fantasy', ['fantasy', 'fentasy', 'fantsy', 'magic', 'jadu', 'jaadu']],
+  ['romance', 'Romance', ['romance', 'romantic', 'romans', 'pyaar', 'pyar', 'piyar', 'mohabbat', 'mohabat', 'ishq', 'love', 'prem']],
+  ['horror', 'Horror', ['horror', 'horrar', 'horor', 'bhoot', 'bhoothiya', 'bhootiya', 'darawna', 'scary', 'haunted', 'ghost', 'pishach', 'haweli', 'haveli']],
+  ['crime', 'Crime', ['crime', 'suspense', 'thriller', 'detective', 'mystery', 'police', 'murder', 'khoon', 'jasoos', 'mafia']]
+];
+const inGenre = (s, g) => { const hay = [s.genre, s.title, s.sub].join(' ').toLowerCase(); return g[2].some(a => hay.includes(a)); };
+const TABS = [['foryou','For you'],['new','New'],['top','Top 10'],['story','Story']].concat(GENRES.map(g => ['g_' + g[0], g[1]]));
+const header = () => `<header class="top"><h1 class="logo">kahaniyon</h1><div class="right"><button class="coinchip" data-a="profile" aria-label="Coins"><span class="coin">क</span>${store.get('kcs.coins', 0)}</button><button class="avatar-btn" data-a="profile" aria-label="Profile">${I.user}</button></div></header>`;
 const tabsBar = () => `<div class="tabs" role="tablist">${TABS.map(([k,l]) => `<button class="tab" role="tab" aria-selected="${S.tab===k}" data-a="tab" data-v="${k}">${l}</button>`).join('')}</div>`;
 function hero(s){
   const has = S.chats[s.id] && S.chats[s.id].messages.length;
-  return cv(s, 'hero', `<span class="chip">${esc(s.genre)}</span>${coverTitle(s)}<div class="spacer"></div><button class="start" data-a="open" data-id="${s.id}">${has ? 'Chat jaari rakho' : 'Chat shuru karo'}</button>`,
+  const img = hasImg(s);
+  return cv(s, 'hero', `${img ? '' : '<span class="chip">' + esc(s.genre) + '</span>' + coverTitle(s)}<div class="spacer"></div>${img ? '<div class="hero-t">' + esc(s.title) + '</div>' : ''}<button class="start" data-a="open" data-id="${s.id}">${has ? 'CONTINUE CHAT' : 'START CHAT'}</button>`,
     null, `data-a="open" data-id="${s.id}" role="button" tabindex="0"`);
 }
 const railItem = s => `<button class="rail-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span>${esc(s.title)}</span></button>`;
@@ -617,18 +657,54 @@ function listRow(s, rank){
 function continueList(){
   return Object.entries(S.chats).filter(([id,c]) => c.messages.length && story(id)).sort((a,b) => b[1].updated - a[1].updated).map(([id]) => story(id));
 }
+const fmtN = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K' : String(n);
+const hasImg = s => !!((s.images && s.images[0]) || s.avatar);
+const cntBadge = s => { const n = popOf(s.id); return n > 0 ? `<span class="cnt"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>${fmtN(n)}</span>` : ''; };
+function posterCard(s, rank){
+  const inner = (hasImg(s) ? '' : coverTitle(s)) + cntBadge(s) + (rank ? `<span class="rank10">${rank}</span>` : '');
+  return `<button class="pcard" data-a="open" data-id="${s.id}">${cv(s, '', inner)}<b>${esc(s.title)}</b><small>${esc(s.genre)}</small></button>`;
+}
+function genreTiles(L){
+  const stop = new Set(['roleplay', 'story', 'aur', 'and', 'kahani', 'the']);
+  const map = new Map();
+  L.forEach(s => String(s.genre || '').split(/[\s·,\/|&]+/).map(x => x.trim()).filter(x => x.length > 2 && !stop.has(x.toLowerCase())).forEach(g => {
+    const k = g.toLowerCase();
+    if(!map.has(k)) map.set(k, {name: g.charAt(0).toUpperCase() + g.slice(1), n: 0, s});
+    map.get(k).n++;
+  }));
+  return [...map.values()].sort((a, b) => b.n - a.n).slice(0, 8);
+}
 function homeView(){
   const L = allStories(); let body = '';
   if(S.tab === 'foryou'){
     const cont = continueList();
-    const featured = [...L].sort((a,b) => (b.createdAt||0) - (a.createdAt||0) || (b.isNew?1:0) - (a.isNew?1:0));
-    body = `<div class="pad"><div class="herorail">${featured.map(hero).join('')}</div><h2 class="h2">Chat jaari rakho</h2>
+    const byNew = [...L].sort((a,b) => (b.createdAt||0) - (a.createdAt||0) || (b.isNew?1:0) - (a.isNew?1:0));
+    const byPop = [...L].sort((a,b) => popOf(b.id) - popOf(a.id) || (a.rank || 999) - (b.rank || 999));
+    const newTop = byNew.slice(0, 4), popTop = byPop.slice(0, 4);
+    const shown = new Set([...newTop, ...popTop].map(s => s.id));
+    const rest = L.filter(s => !shown.has(s.id));
+    const catTiles = GENRES.map(g => ({g, s: L.find(x => inGenre(x, g))}));
+    const extraTiles = genreTiles(L).filter(t => !GENRES.some(g => g[2].some(a => t.name.toLowerCase().includes(a)))).slice(0, 4);
+    const genreHtml = catTiles.map(t => `<button class="gtile" data-a="tabTop" data-v="g_${t.g[0]}">${t.s ? cv(t.s, '', '', 'avatar') : '<div class="cover" style="--c1:#2a2a30;--c2:#18181c;--glow:#8a8a94"></div>'}<span>${t.g[1]}</span></button>`).join('') + extraTiles.map(t => `<button class="gtile" data-a="genre" data-v="${esc(t.name)}">${cv(t.s, '', '', 'avatar')}<span>${esc(t.name)}</span></button>`).join('');
+    body = `<div class="pad"><div class="herorail">${byNew.map(hero).join('')}</div>
+      <div class="sechead"><h2>Chat jaari rakho</h2></div>
       ${cont.length ? `<div class="rail">${cont.map(railItem).join('')}</div>` : '<p class="empty">Abhi koi chat shuru nahi hui. Upar se kahani chuno aur AI ke saath kahani aage badhao.</p>'}
-      <h2 class="h2">Aapke liye</h2><div class="grid">${L.slice(1).map(gridCard).join('')}</div></div>`;
+      <div class="sechead"><h2>New Release</h2></div>
+      <div class="pgrid">${newTop.map(s => posterCard(s)).join('')}</div>
+      <button class="viewall" data-a="tabTop" data-v="new">Sab dekho ${I.chev}</button>
+      ${genreHtml ? `<div class="sechead"><h2>Popular Genres</h2></div><div class="gtiles">${genreHtml}</div>` : ''}
+      <div class="sechead"><h2>Top 10 This Week</h2></div>
+      <div class="pgrid">${popTop.map((s, i) => posterCard(s, i + 1)).join('')}</div>
+      <button class="viewall" data-a="tabTop" data-v="top">Sab dekho ${I.chev}</button>
+      ${rest.length ? `<div class="sechead"><h2>Explore More</h2></div><div class="pgrid">${rest.map(s => posterCard(s)).join('')}</div>` : ''}</div>`;
   } else if(S.tab === 'new'){
     body = `<div class="pad">${[...L].sort((a,b) => (b.createdAt||0) - (a.createdAt||0) || (b.isNew?1:0) - (a.isNew?1:0)).map(s => listRow(s)).join('')}</div>`;
   } else if(S.tab === 'top'){
     body = `<div class="pad">${[...L].sort((a,b) => popOf(b.id) - popOf(a.id) || (a.rank || 999) - (b.rank || 999)).map((s,i) => listRow(s,i+1)).join('')}</div>`;
+  } else if(S.tab.indexOf('g_') === 0){
+    const g = GENRES.find(x => 'g_' + x[0] === S.tab);
+    const list = g ? L.filter(s => inGenre(s, g)) : [];
+    body = `<div class="pad">${list.length ? `<div class="pgrid">${list.map(s => posterCard(s)).join('')}</div>` : '<p class="empty">Is genre me abhi koi kahani nahi hai. Character banate waqt genre me "' + (g ? g[1] : '') + '" likho to wo yahan dikhegi.</p>'}</div>`;
   } else body = `<div class="pad"><div class="grid">${L.map(gridCard).join('')}</div></div>`;
   return header() + tabsBar() + body;
 }
@@ -645,13 +721,21 @@ function fmtChatDate(ts){
   if(d.toDateString() === y.toDateString()) return 'Yesterday';
   return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
 }
-function chatsView(){
-  const list = continueList();
-  return header() + `<div class="pad"><h2 class="h2" style="margin-top:8px">Aapki chats</h2>` + (list.length ? list.map(s => {
-    const c = S.chats[s.id]; const last = [...c.messages].reverse().find(m => m.r === 'a' && m.t && !m.err);
-    return `<button class="row-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span class="meta"><span class="t">${esc(s.title)}</span><br><span class="s">${esc((last ? last.t.replace(/\*/g,'') : '').slice(0,90))}</span></span><span class="when">${esc(fmtChatDate(c.updated))}</span>${S.unread[s.id] > 0 ? `<span class="ubadge">${S.unread[s.id] > 99 ? '99+' : S.unread[s.id]}</span>` : ''}</button>`;
-  }).join('') : '<p class="empty">Abhi koi chat nahi. Home se koi kahani chuno aur Chat shuru karo.</p>') + '</div>';
+const lastMsgOf = c => [...c.messages].reverse().find(m => m.t && !m.err && !m.h);
+function chatRows(){
+  const q = (S.cq || '').trim().toLowerCase();
+  const list = continueList().filter(s => { if(!q) return true; const last = lastMsgOf(S.chats[s.id]); return (s.title + ' ' + (last ? last.t : '')).toLowerCase().includes(q); });
+  if(!list.length) return `<p class="empty">${q ? 'Is naam ki koi chat nahi mili.' : 'Abhi koi chat nahi. Home se koi kahani chuno aur Chat shuru karo.'}</p>`;
+  return list.map(s => {
+    const c = S.chats[s.id], last = lastMsgOf(c), un = S.unread[s.id] > 0;
+    const pv = last ? (last.r === 'u' ? 'Tum: ' : '') + last.t.replace(/\*/g, '').replace(/\s+/g, ' ').trim().slice(0, 120) : '';
+    return `<button class="row-item chat-row${un ? ' unr' : ''}" data-a="open" data-id="${s.id}">${cv(s, '', '', 'avatar')}<span class="meta"><span class="t">${esc(s.title)}</span><span class="p">${esc(pv)}</span></span><span class="when">${esc(fmtChatDate(c.updated))}</span>${un ? `<span class="ubadge">${S.unread[s.id] > 99 ? '99+' : S.unread[s.id]}</span>` : ''}</button>`;
+  }).join('');
 }
+function chatsView(){
+  return header() + `<div class="pad"><label class="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg><input id="cq" type="search" placeholder="Search conversations" value="${esc(S.cq || '')}" autocomplete="off"></label><div id="chatList">${chatRows()}</div></div>`;
+}
+document.addEventListener('input', e => { if(e.target && e.target.id === 'cq'){ S.cq = e.target.value; const el = document.getElementById('chatList'); if(el) el.innerHTML = chatRows(); } });
 
 /* ---------- chat view ---------- */
 function aboutCard(s){
@@ -817,6 +901,7 @@ function renderInner(){
   stopHeroAuto();
   if(S.view === 'chat' && S.unread[S.chatId]){ S.unread[S.chatId] = 0; saveUnread(); }
   setTimeout(updateBadges, 0);
+  setTimeout(() => { const t = document.querySelector('.tab[aria-selected="true"]'); if(t && t.scrollIntoView) t.scrollIntoView({inline:'center', block:'nearest'}); }, 0);
   const sc = $('#screen'), nav = $('#nav');
   if(!store.get('kcs.onboarded', false) && S.view !== 'welcome'){ S.view = 'welcome'; }
   if(S.view === 'welcome'){
@@ -957,7 +1042,7 @@ function initFirebase(cfg){
       toast(why); return false;
     }
     if(!FB.app) FB.app = firebase.initializeApp(cfg);
-    FB.auth = firebase.auth(); FB.db = firebase.firestore(); try{ FB.db.settings({experimentalForceLongPolling:true}); }catch(e){} FB.ready = true;
+    FB.auth = firebase.auth(); FB.db = firebase.firestore(); try{ FB.db.settings({experimentalAutoDetectLongPolling:true}); }catch(e){} FB.ready = true;
     FB.auth.onAuthStateChanged(u => { S.user = u; S.authChecked = true; if(S.ov === 'sheet') showOv('sheet', accountSection() + settingsButtons()); else render(); });
     listenContent();
     return true;
@@ -1419,6 +1504,8 @@ function openChat(id){
 }
 const ACT = {
   tab: el => { S.tab = el.dataset.v; render(); },
+  tabTop: el => { S.tab = el.dataset.v; render(); const sc = $('#screen'); if(sc) sc.scrollTop = 0; },
+  genre: el => { S.q = el.dataset.v; S.view = 'search'; history.replaceState({app:1, view:'search'}, ''); render(); },
   nav: el => { S.view = el.dataset.v; history.replaceState({app:1, view:S.view}, ''); render(); },
   open: el => openChat(el.dataset.id),
   back: () => history.back(),
