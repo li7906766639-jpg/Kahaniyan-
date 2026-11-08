@@ -175,6 +175,19 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .about h3{margin:16px 6px 4px;font-size:22px;font-weight:600}
 .about p{margin:0 6px;font-size:18px;line-height:1.5;white-space:pre-wrap}
 .price{display:flex;align-items:center;gap:10px;width:max-content;margin:16px auto 4px;background:var(--surface2);border-radius:99px;padding:8px 22px 8px 12px;font-size:18px;color:var(--muted)}
+.coin.hexk,.coincard .coin.hexk.big{border:0;border-radius:0;background:linear-gradient(145deg,#ffd75e,#f5a300);color:#6a3d00;clip-path:polygon(50% 0,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);font-weight:800;text-transform:lowercase;display:grid;place-items:center}
+.coin.hexk.lg{width:58px;height:58px;font-size:32px;flex:0 0 auto}
+.coinchip .coin.hexk{width:28px;height:28px;font-size:16px}
+.ctag{display:block;width:fit-content;background:#2a2410;color:#e9c84a;border-radius:8px;padding:6px 12px;font-size:15px;margin-bottom:12px}
+.cpack,.coffer{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:14px}
+.crow{display:flex;align-items:center;gap:14px}
+.cinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cinfo b{font-size:30px;font-weight:700;line-height:1.1}
+.cinfo b small{font-size:18px;color:var(--muted);font-weight:500}
+.cinfo span{color:var(--muted);font-size:15px}
+.cprice{background:#fff;color:#111;font-weight:800;font-size:20px;padding:10px 18px;border-radius:12px;white-space:nowrap}
+[data-theme="light"] .cprice{background:#111;color:#fff}
+.cbanner{display:block;margin:-14px -14px 14px;background:#0a6b3d;color:#fff;text-align:center;font-weight:700;padding:8px;border-radius:18px 18px 0 0;font-size:17px}
 .coin{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#f5b300;color:#5a3a00;font-weight:700;font-size:18px;border:3px solid #ffcf3d}
 .about .edit-row{margin:12px 6px 0}
 .row{display:flex;max-width:100%}
@@ -640,7 +653,7 @@ const GENRES = [
 ];
 const inGenre = (s, g) => { const hay = [s.genre, s.title, s.sub].join(' ').toLowerCase(); return g[2].some(a => hay.includes(a)); };
 const TABS = [['foryou','For you'],['new','New'],['top','Top 10'],['story','Story']].concat(GENRES.map(g => ['g_' + g[0], g[1]]));
-const header = () => `<header class="top"><h1 class="logo">kahaniyon</h1><div class="right"><button class="coinchip" data-a="profile" aria-label="Coins"><span class="coin">क</span>${store.get('kcs.coins', 0)}</button><button class="avatar-btn" data-a="profile" aria-label="Profile">${I.user}</button></div></header>`;
+const header = () => `<header class="top"><h1 class="logo">kahaniyon</h1><div class="right"><button class="coinchip" data-a="coins" aria-label="Coins"><span class="coin hexk">k</span>${store.get('kcs.coins', 0)}</button><button class="avatar-btn" data-a="profile" aria-label="Profile">${I.user}</button></div></header>`;
 const tabsBar = () => `<div class="tabs" role="tablist">${TABS.map(([k,l]) => `<button class="tab" role="tab" aria-selected="${S.tab===k}" data-a="tab" data-v="${k}">${l}</button>`).join('')}</div>`;
 function hero(s){
   const has = S.chats[s.id] && S.chats[s.id].messages.length;
@@ -743,7 +756,7 @@ function aboutCard(s){
   const strip = imgs.length ? imgs.map((u,i) => `<button class="shot" data-a="zoom" data-i="${i}" style="background-image:url('${u}')" aria-label="Photo ${i+1}"></button>`).join('')
     : cv(s,'shot poster',coverTitle(s));
   return `<div class="about"><div class="strip">${strip}</div><h3>About story</h3><p>${esc(s.about || s.premise || s.sub)}</p>
-    ${s.price > 0 ? `<div class="price"><span class="coin">क</span>${s.price}/message</div>` : ''}
+    ${s.price > 0 ? `<div class="price"><span class="coin hexk">k</span>${s.price}/message</div>` : ''}
     </div>`;
 }
 function openingHtml(s){
@@ -850,7 +863,7 @@ function profileView(){
   return `<div class="chat-head"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><div class="who"><b>Profile</b></div></div>
   <div class="pad">
     <div class="prof-row"><button class="prof-av" data-a="profDetails" style="${avStyle}" aria-label="Photo badlo">${init}</button><div><b class="prof-name">${esc(name)}</b><div class="prof-sub">${esc(sub)}</div></div></div>
-    <div class="coincard"><span class="coin big">क</span><div><small>Total Coins Balance</small><b>${coins}</b></div></div>
+    <div class="coincard" data-a="coins" style="cursor:pointer"><span class="coin hexk big">k</span><div><small>Total Coins Balance</small><b>${coins}</b></div></div>
     <h2 class="h2">Settings</h2>
     <div class="plist">${rows.map(([ic,label,act]) => `<button class="prow" data-a="${act}">${I[ic]}<span class="grow">${esc(label)}</span>${I.chev}</button>`).join('')}</div>
     <button class="prow danger" data-a="logout">${I.logout}<span class="grow">Log out</span></button>
@@ -875,6 +888,28 @@ function msgHistory(){
     return `<button class="row-item" data-a="openFromHist" data-id="${id}">${cv(s,'','','avatar')}<span class="meta"><span class="t">${esc(s.title)}</span><br><span class="s">${n} message${n===1?'':'s'} · ${new Date(c.updated).toLocaleDateString('hi-IN',{day:'numeric',month:'short'})}</span></span></button>`;
   }).join('');
   openOv('sheet', `<h2>Message History</h2>${rows || '<p class="empty">Abhi koi chat nahi hai.</p>'}<button class="btn ghost" data-a="closeOv" style="margin-top:14px">Band karo</button>`);
+}
+const COIN_PACKS = [
+  {id:'p29', coins:800, price:29},
+  {id:'p79', coins:1452, price:79},
+  {id:'p119', coins:2192, price:119},
+  {id:'p199', coins:3630, price:199},
+  {id:'p249', coins:4750, price:249}
+];
+const fmtC = n => Number(n).toLocaleString('en-IN');
+function coinsView(){
+  const bal = store.get('kcs.coins', 0);
+  const pack = p => `<button class="cpack" data-a="buyPack" data-id="${p.id}"><span class="crow"><span class="coin hexk lg">k</span><span class="cinfo"><b>${fmtC(p.coins)} <small>Coins</small></b></span><span class="cprice">&#8377;${p.price}</span></span></button>`;
+  return `<div class="chat-head"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><div class="who"><b>Coins</b></div><button class="icon-btn" data-a="purchHistory" aria-label="Purchase History">${I.clock}</button></div>
+  <div class="pad">
+    <div class="coincard"><span class="coin hexk lg">k</span><div><small>Total Coins Balance</small><b>${bal}</b></div></div>
+    <div class="sechead"><h2>Coin Packs</h2></div>
+    ${COIN_PACKS.map(pack).join('')}
+  </div>`;
+}
+function buyPack(id){
+  const p = COIN_PACKS.find(x => x.id === id); if(!p) return;
+  openOv('sheet', `<h2>${fmtC(p.coins)} Coins &mdash; &#8377;${p.price}</h2><p>Payment abhi jodi nahi gayi hai, isliye abhi coins kharid nahi sakte. Ye option jald chalu hoga.</p><button class="btn ghost" data-a="closeOv">Theek hai</button>`);
 }
 function purchHistory(){
   openOv('sheet', `<h2>Purchase History</h2><p class="empty">Abhi koi purchase nahi hui hai. Coins kharidne ka option jald aa raha hai.</p><button class="btn ghost" data-a="closeOv">Band karo</button>`);
@@ -917,6 +952,9 @@ function renderInner(){
   }
   if(S.view === 'profile'){
     sc.className = ''; nav.classList.add('hide'); sc.innerHTML = profileView(); sc.scrollTop = 0; return;
+  }
+  if(S.view === 'coins'){
+    sc.className = ''; nav.classList.add('hide'); sc.innerHTML = coinsView(); sc.scrollTop = 0; return;
   }
   sc.className = ''; nav.classList.remove('hide');
   sc.innerHTML = ({home:homeView, search:searchView, chats:chatsView})[S.view]();
@@ -1510,7 +1548,7 @@ const ACT = {
   open: el => openChat(el.dataset.id),
   back: () => history.back(),
   settings: () => openSettings(),
-  profile: () => go('profile'), finishWelcome, pickGender: el => {
+  profile: () => go('profile'), coins: () => go('coins'), buyPack: el => buyPack(el.dataset.id), finishWelcome, pickGender: el => {
     const n = $('#wName') ? $('#wName').value : '', ph = $('#wPhone') ? $('#wPhone').value : '';
     S.wGender = el.dataset.g; render();
     if($('#wName')) $('#wName').value = n; if($('#wPhone')) $('#wPhone').value = ph;
