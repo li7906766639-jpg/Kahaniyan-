@@ -175,6 +175,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .about h3{margin:16px 6px 4px;font-size:22px;font-weight:600}
 .about p{margin:0 6px;font-size:18px;line-height:1.5;white-space:pre-wrap}
 .price{display:flex;align-items:center;gap:10px;width:max-content;margin:16px auto 4px;background:var(--surface2);border-radius:99px;padding:8px 22px 8px 12px;font-size:18px;color:var(--muted)}
+.payqr{display:grid;place-items:center;background:#fff;border-radius:16px;padding:10px;margin:12px auto;width:fit-content}
+.payqr svg{display:block;width:230px;height:230px;max-width:100%}
+.hint{color:var(--muted);font-size:14.5px;margin:10px 0}
+.prow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.prow small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px;word-break:break-all}
+.pst{font-weight:700;font-size:13.5px;white-space:nowrap}
+.pst-p{color:#e9b02a}.pst-ok{color:#35c46a}.pst-no{color:#e5534d}
+.pbtns{display:flex;gap:8px;margin-top:8px}
+.coinnote{color:var(--muted);font-size:14.5px;margin:12px 2px 0}
 .coin.hexk,.coincard .coin.hexk.big{border:0;border-radius:0;background:linear-gradient(145deg,#ffd75e,#f5a300);color:#6a3d00;clip-path:polygon(50% 0,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);font-weight:800;text-transform:lowercase;display:grid;place-items:center}
 .coin.hexk.lg{width:58px;height:58px;font-size:32px;flex:0 0 auto}
 .coinchip .coin.hexk{width:28px;height:28px;font-size:16px}
@@ -456,6 +465,8 @@ const APP_INFO = {
   appName:'',
   splashPhotos:[],
   userBubbleColor:'',
+  upiId:'',
+  upiName:'',
   voiceGender:'female',
   voiceRate:1,
   supportEmail:'support@kahaniyon.app',
@@ -653,7 +664,7 @@ const GENRES = [
 ];
 const inGenre = (s, g) => { const hay = [s.genre, s.title, s.sub].join(' ').toLowerCase(); return g[2].some(a => hay.includes(a)); };
 const TABS = [['foryou','For you'],['new','New'],['top','Top 10'],['story','Story']].concat(GENRES.map(g => ['g_' + g[0], g[1]]));
-const header = () => `<header class="top"><h1 class="logo">kahaniyon</h1><div class="right"><button class="coinchip" data-a="coins" aria-label="Coins"><span class="coin hexk">k</span>${store.get('kcs.coins', 0)}</button><button class="avatar-btn" data-a="profile" aria-label="Profile">${I.user}</button></div></header>`;
+const header = () => `<header class="top"><h1 class="logo">kahaniyon</h1><div class="right"><button class="coinchip" data-a="coins" aria-label="Coins"><span class="coin hexk">k</span><span class="cval">${coinVal()}</span></button><button class="avatar-btn" data-a="profile" aria-label="Profile">${I.user}</button></div></header>`;
 const tabsBar = () => `<div class="tabs" role="tablist">${TABS.map(([k,l]) => `<button class="tab" role="tab" aria-selected="${S.tab===k}" data-a="tab" data-v="${k}">${l}</button>`).join('')}</div>`;
 function hero(s){
   const has = S.chats[s.id] && S.chats[s.id].messages.length;
@@ -756,7 +767,7 @@ function aboutCard(s){
   const strip = imgs.length ? imgs.map((u,i) => `<button class="shot" data-a="zoom" data-i="${i}" style="background-image:url('${u}')" aria-label="Photo ${i+1}"></button>`).join('')
     : cv(s,'shot poster',coverTitle(s));
   return `<div class="about"><div class="strip">${strip}</div><h3>About story</h3><p>${esc(s.about || s.premise || s.sub)}</p>
-    ${s.price > 0 ? `<div class="price"><span class="coin hexk">k</span>${s.price}/message</div>` : ''}
+    <div class="price"><span class="coin hexk">k</span>${COIN_COST}/message</div>
     </div>`;
 }
 function openingHtml(s){
@@ -863,7 +874,7 @@ function profileView(){
   return `<div class="chat-head"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><div class="who"><b>Profile</b></div></div>
   <div class="pad">
     <div class="prof-row"><button class="prof-av" data-a="profDetails" style="${avStyle}" aria-label="Photo badlo">${init}</button><div><b class="prof-name">${esc(name)}</b><div class="prof-sub">${esc(sub)}</div></div></div>
-    <div class="coincard" data-a="coins" style="cursor:pointer"><span class="coin hexk big">k</span><div><small>Total Coins Balance</small><b>${coins}</b></div></div>
+    <div class="coincard" data-a="coins" style="cursor:pointer"><span class="coin hexk big">k</span><div><small>Total Coins Balance</small><b class="cval">${coinVal()}</b></div></div>
     <h2 class="h2">Settings</h2>
     <div class="plist">${rows.map(([ic,label,act]) => `<button class="prow" data-a="${act}">${I[ic]}<span class="grow">${esc(label)}</span>${I.chev}</button>`).join('')}</div>
     <button class="prow danger" data-a="logout">${I.logout}<span class="grow">Log out</span></button>
@@ -889,6 +900,146 @@ function msgHistory(){
   }).join('');
   openOv('sheet', `<h2>Message History</h2>${rows || '<p class="empty">Abhi koi chat nahi hai.</p>'}<button class="btn ghost" data-a="closeOv" style="margin-top:14px">Band karo</button>`);
 }
+const CREATOR_FILE = false;
+const ADMIN_EMAIL = '';
+const COIN_COST = 10, WELCOME_COINS = 100;
+S.coins = null; S.coinsUnsub = null; S.payPack = null;
+const coinFree = () => !!(CREATOR_FILE && S.user && String(S.user.email || '').toLowerCase() === ADMIN_EMAIL);
+const coinVal = () => S.coins == null ? 0 : S.coins;
+function updateCoinUI(){ const v = String(coinVal()); document.querySelectorAll('.cval').forEach(el => { el.textContent = v; }); }
+function watchCoins(){
+  if(S.coinsUnsub){ try{ S.coinsUnsub(); }catch(e){} S.coinsUnsub = null; }
+  S.coins = null; updateCoinUI();
+  if(!FB.ready || !S.user) return;
+  const ref = FB.db.collection('users').doc(S.user.uid);
+  S.coinsUnsub = ref.onSnapshot(snap => {
+    if(snap.exists){ S.coins = Number((snap.data() || {}).coins) || 0; }
+    else if(!snap.metadata.fromCache){
+      S.coins = WELCOME_COINS;
+      ref.set({coins: WELCOME_COINS, createdAt: Date.now(), updatedAt: Date.now()}).then(() => toast('Swagat hai! ' + WELCOME_COINS + ' free coins mile (' + (WELCOME_COINS / COIN_COST) + ' messages)', 5000)).catch(e => console.warn('welcome', e));
+    }
+    updateCoinUI();
+  }, e => console.warn('coins', e));
+}
+function coinOk(){
+  if(coinFree()) return true;
+  if(!S.user){ toast('Chat ke liye pehle login karo'); return false; }
+  if(S.coins == null){ toast('Coins load ho rahe hain, ek second ruko...'); return false; }
+  if(S.coins < COIN_COST){ needCoins(); return false; }
+  return true;
+}
+function needCoins(){
+  openOv('sheet', `<h2>Coins khatam ho gaye</h2><p>Chat jaari rakhne ke liye coins kharido. Har message ke ${COIN_COST} coins lagte hain (dobara banao aur aage badhao ke bhi).</p><button class="btn" data-a="coinsFromSheet">Coins kharido</button><button class="btn ghost" data-a="closeOv">Baad me</button>`);
+}
+function spendCoins(){
+  if(coinFree() || !FB.ready || !S.user) return;
+  FB.db.collection('users').doc(S.user.uid).update({coins: firebase.firestore.FieldValue.increment(-COIN_COST), updatedAt: Date.now()}).catch(e => console.warn('spend', e));
+}
+function makeQR(text){
+  const data = Array.from(new TextEncoder().encode(text));
+  const EC = [null, [10,[[1,16]]], [16,[[1,28]]], [26,[[1,44]]], [18,[[2,32]]], [24,[[2,43]]], [16,[[4,27]]], [18,[[4,31]]], [22,[[2,38],[2,39]]], [22,[[3,36],[2,37]]], [26,[[4,43],[1,44]]]];
+  const ALIGN = [null, [], [6,18], [6,22], [6,26], [6,30], [6,34], [6,22,38], [6,24,42], [6,26,46], [6,28,50]];
+  let ver = 0;
+  for(let v = 1; v <= 10; v++){
+    const cap = EC[v][1].reduce((a, g) => a + g[0] * g[1], 0);
+    if(4 + (v < 10 ? 8 : 16) + data.length * 8 <= cap * 8){ ver = v; break; }
+  }
+  if(!ver) return null;
+  const ecLen = EC[ver][0], groups = EC[ver][1];
+  const totalData = groups.reduce((a, g) => a + g[0] * g[1], 0);
+  const bb = [];
+  const put = (val, len) => { for(let i = len - 1; i >= 0; i--) bb.push((val >>> i) & 1); };
+  put(4, 4); put(data.length, ver < 10 ? 8 : 16); data.forEach(b => put(b, 8));
+  put(0, Math.min(4, totalData * 8 - bb.length));
+  while(bb.length % 8) bb.push(0);
+  for(let pad = 0xEC; bb.length < totalData * 8; pad = pad === 0xEC ? 0x11 : 0xEC) put(pad, 8);
+  const cw = []; for(let i = 0; i < bb.length; i += 8) cw.push(parseInt(bb.slice(i, i + 8).join(''), 2));
+  const exp = new Array(512), lg = new Array(256); let x = 1;
+  for(let i = 0; i < 255; i++){ exp[i] = x; lg[x] = i; x <<= 1; if(x & 256) x ^= 0x11D; }
+  for(let i = 255; i < 512; i++) exp[i] = exp[i - 255];
+  const mul = (a, b) => (a && b) ? exp[lg[a] + lg[b]] : 0;
+  let gen = [1];
+  for(let i = 0; i < ecLen; i++){ const ng = new Array(gen.length + 1).fill(0); for(let j = 0; j < gen.length; j++){ ng[j] ^= gen[j]; ng[j + 1] ^= mul(gen[j], exp[i]); } gen = ng; }
+  const rs = block => { const res = new Array(ecLen).fill(0); for(const b of block){ const f = b ^ res[0]; res.shift(); res.push(0); if(f) for(let j = 0; j < ecLen; j++) res[j] ^= mul(gen[j + 1], f); } return res; };
+  const blocks = []; let pos = 0;
+  groups.forEach(g => { for(let i = 0; i < g[0]; i++){ blocks.push(cw.slice(pos, pos + g[1])); pos += g[1]; } });
+  const ecs = blocks.map(rs), out = [];
+  const maxLen = Math.max.apply(null, blocks.map(b => b.length));
+  for(let i = 0; i < maxLen; i++) blocks.forEach(b => { if(i < b.length) out.push(b[i]); });
+  for(let i = 0; i < ecLen; i++) ecs.forEach(e => out.push(e[i]));
+  const bits = [];
+  out.forEach(b => { for(let i = 7; i >= 0; i--) bits.push((b >> i) & 1); });
+  const N = 17 + 4 * ver;
+  const base = Array.from({length: N}, () => new Array(N).fill(false));
+  const res = Array.from({length: N}, () => new Array(N).fill(false));
+  const setM = (r, c, v) => { base[r][c] = v; res[r][c] = true; };
+  const finder = (r0, c0) => { for(let r = -1; r <= 7; r++) for(let c = -1; c <= 7; c++){ const rr = r0 + r, cc = c0 + c; if(rr < 0 || rr >= N || cc < 0 || cc >= N) continue; setM(rr, cc, (r >= 0 && r <= 6 && (c === 0 || c === 6)) || (c >= 0 && c <= 6 && (r === 0 || r === 6)) || (r >= 2 && r <= 4 && c >= 2 && c <= 4)); } };
+  finder(0, 0); finder(0, N - 7); finder(N - 7, 0);
+  for(let i = 8; i < N - 8; i++){ setM(6, i, i % 2 === 0); setM(i, 6, i % 2 === 0); }
+  const ap = ALIGN[ver], last = N - 7;
+  ap.forEach(r => ap.forEach(c => { if((r === 6 && c === 6) || (r === 6 && c === last) || (r === last && c === 6)) return; for(let dr = -2; dr <= 2; dr++) for(let dc = -2; dc <= 2; dc++) setM(r + dr, c + dc, Math.max(Math.abs(dr), Math.abs(dc)) !== 1); }));
+  for(let i = 0; i < 9; i++){ if(!res[8][i]) setM(8, i, false); if(!res[i][8]) setM(i, 8, false); }
+  for(let i = 0; i < 8; i++){ if(!res[8][N - 1 - i]) setM(8, N - 1 - i, false); if(!res[N - 1 - i][8]) setM(N - 1 - i, 8, false); }
+  setM(N - 8, 8, true);
+  if(ver >= 7){
+    let rem = ver; for(let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+    const vb = (ver << 12) | rem;
+    for(let i = 0; i < 18; i++){ const v = ((vb >>> i) & 1) === 1, a = N - 11 + (i % 3), b = Math.floor(i / 3); setM(b, a, v); setM(a, b, v); }
+  }
+  const dpos = [];
+  let up = true;
+  for(let col = N - 1; col > 0; col -= 2){
+    if(col === 6) col--;
+    for(let i = 0; i < N; i++){ const r = up ? N - 1 - i : i; for(let dc = 0; dc < 2; dc++){ const c = col - dc; if(!res[r][c]) dpos.push([r, c]); } }
+    up = !up;
+  }
+  const MASK = [(r, c) => (r + c) % 2 === 0, (r, c) => r % 2 === 0, (r, c) => c % 3 === 0, (r, c) => (r + c) % 3 === 0, (r, c) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0, (r, c) => (r * c) % 2 + (r * c) % 3 === 0, (r, c) => ((r * c) % 2 + (r * c) % 3) % 2 === 0, (r, c) => ((r + c) % 2 + (r * c) % 3) % 2 === 0];
+  const build = mask => {
+    const m = base.map(r => r.slice());
+    dpos.forEach((p, i) => { let v = i < bits.length ? bits[i] === 1 : false; if(MASK[mask](p[0], p[1])) v = !v; m[p[0]][p[1]] = v; });
+    const d = mask; let r10 = d << 10;
+    for(let i = 14; i >= 10; i--) if((r10 >>> i) & 1) r10 ^= 0x537 << (i - 10);
+    const f = ((d << 10) | r10) ^ 0x5412, bit = i => ((f >>> i) & 1) === 1;
+    for(let i = 0; i <= 5; i++) m[i][8] = bit(i);
+    m[7][8] = bit(6); m[8][8] = bit(7); m[8][7] = bit(8);
+    for(let i = 9; i < 15; i++) m[8][14 - i] = bit(i);
+    for(let i = 0; i < 8; i++) m[8][N - 1 - i] = bit(i);
+    for(let i = 8; i < 15; i++) m[N - 15 + i][8] = bit(i);
+    m[N - 8][8] = true;
+    return m;
+  };
+  const penalty = m => {
+    let p = 0, dark = 0;
+    for(let r = 0; r < N; r++){
+      for(let pass = 0; pass < 2; pass++){
+        let run = 1;
+        for(let i = 1; i < N; i++){
+          const a = pass ? m[i][r] : m[r][i], b = pass ? m[i - 1][r] : m[r][i - 1];
+          if(a === b){ run++; if(run === 5) p += 3; else if(run > 5) p++; } else run = 1;
+        }
+        for(let i = 0; i + 11 <= N; i++){
+          const w = []; for(let k = 0; k < 11; k++) w.push((pass ? m[i + k][r] : m[r][i + k]) ? 1 : 0);
+          const s = w.join('');
+          if(s === '10111010000' || s === '00001011101') p += 40;
+        }
+      }
+      for(let c = 0; c < N; c++) if(m[r][c]) dark++;
+    }
+    for(let r = 0; r < N - 1; r++) for(let c = 0; c < N - 1; c++){ const v = m[r][c]; if(v === m[r][c + 1] && v === m[r + 1][c] && v === m[r + 1][c + 1]) p += 3; }
+    p += (Math.ceil(Math.abs(dark * 20 - N * N * 10) / (N * N)) - 1) * 10;
+    return p;
+  };
+  let best = null, bestP = Infinity;
+  for(let mk = 0; mk < 8; mk++){ const m = build(mk), p = penalty(m); if(p < bestP){ bestP = p; best = m; } }
+  return best;
+}
+function qrSvg(text){
+  const m = makeQR(text); if(!m) return '';
+  const n = m.length, q = 4; let d = '';
+  for(let r = 0; r < n; r++) for(let c = 0; c < n; c++) if(m[r][c]) d += 'M' + (c + q) + ' ' + (r + q) + 'h1v1h-1z';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (n + 2 * q) + ' ' + (n + 2 * q) + '" width="240" height="240" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>';
+}
+
 const COIN_PACKS = [
   {id:'p29', coins:800, price:29},
   {id:'p79', coins:1452, price:79},
@@ -898,22 +1049,56 @@ const COIN_PACKS = [
 ];
 const fmtC = n => Number(n).toLocaleString('en-IN');
 function coinsView(){
-  const bal = store.get('kcs.coins', 0);
-  const pack = p => `<button class="cpack" data-a="buyPack" data-id="${p.id}"><span class="crow"><span class="coin hexk lg">k</span><span class="cinfo"><b>${fmtC(p.coins)} <small>Coins</small></b></span><span class="cprice">&#8377;${p.price}</span></span></button>`;
+  const pack = p => `<button class="cpack" data-a="buyPack" data-id="${p.id}"><span class="crow"><span class="coin hexk lg">k</span><span class="cinfo"><b>${fmtC(p.coins)} <small>Coins</small></b><span>${fmtC(Math.floor(p.coins / COIN_COST))} messages</span></span><span class="cprice">&#8377;${p.price}</span></span></button>`;
   return `<div class="chat-head"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><div class="who"><b>Coins</b></div><button class="icon-btn" data-a="purchHistory" aria-label="Purchase History">${I.clock}</button></div>
   <div class="pad">
-    <div class="coincard"><span class="coin hexk lg">k</span><div><small>Total Coins Balance</small><b>${bal}</b></div></div>
+    <div class="coincard"><span class="coin hexk lg">k</span><div><small>Total Coins Balance</small><b class="cval">${coinVal()}</b></div></div>
+    <p class="coinnote">Har message ke ${COIN_COST} coins lagte hain (dobara banao aur aage badhao ke bhi).</p>
     <div class="sechead"><h2>Coin Packs</h2></div>
     ${COIN_PACKS.map(pack).join('')}
   </div>`;
 }
-function buyPack(id){
+function openPay(id){
   const p = COIN_PACKS.find(x => x.id === id); if(!p) return;
-  openOv('sheet', `<h2>${fmtC(p.coins)} Coins &mdash; &#8377;${p.price}</h2><p>Payment abhi jodi nahi gayi hai, isliye abhi coins kharid nahi sakte. Ye option jald chalu hoga.</p><button class="btn ghost" data-a="closeOv">Theek hai</button>`);
+  if(!S.user){ toast('Coins kharidne ke liye pehle login karo'); return; }
+  const upi = String(INFO.upiId || '').trim();
+  if(!upi){ openOv('sheet', `<h2>${fmtC(p.coins)} Coins &mdash; &#8377;${p.price}</h2><p>Payment abhi chalu nahi hai. Thodi der baad dobara aana.</p><button class="btn ghost" data-a="closeOv">Theek hai</button>`); return; }
+  S.payPack = p.id;
+  const link = 'upi://pay?pa=' + encodeURIComponent(upi) + '&pn=' + encodeURIComponent(INFO.upiName || 'Kahaniyon') + '&am=' + p.price + '.00&cu=INR&tn=' + encodeURIComponent('Coins ' + p.coins);
+  openOv('sheet', `<h2>${fmtC(p.coins)} Coins &mdash; &#8377;${p.price}</h2>
+    <div class="payqr" id="payQr"></div>
+    <a class="btn" style="display:block;text-align:center;text-decoration:none" href="${esc(link)}">UPI app se pay karo</a>
+    <p class="hint">Dusre phone se QR scan karo, ya upar wale button se apni UPI app kholo. UPI ID: <b>${esc(upi)}</b><br>Paise bhejne ke baad apna <b>UTR / Transaction ID</b> neeche likho. Aapke paise check hone ke baad coins mil jayenge.</p>
+    <div class="field"><label for="payUtr">UTR / Transaction ID</label><input id="payUtr" autocomplete="off" autocapitalize="characters" placeholder="jaise 412345678901"></div>
+    <button class="btn" data-a="paySubmit">Bhej diya</button>
+    <button class="btn ghost" data-a="closeOv">Band karo</button>`);
+  const box = document.getElementById('payQr'); if(box) box.innerHTML = qrSvg(link);
 }
-function purchHistory(){
-  openOv('sheet', `<h2>Purchase History</h2><p class="empty">Abhi koi purchase nahi hui hai. Coins kharidne ka option jald aa raha hai.</p><button class="btn ghost" data-a="closeOv">Band karo</button>`);
+async function paySubmit(){
+  const p = COIN_PACKS.find(x => x.id === S.payPack), el = document.getElementById('payUtr');
+  if(!p || !el) return;
+  const utr = el.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if(utr.length < 8 || utr.length > 30){ toast('UTR / Transaction ID sahi likho (kam se kam 8 akshar ya ank)', 4000); return; }
+  if(!FB.ready || !S.user){ toast('Pehle login karo'); return; }
+  try{
+    await FB.db.collection('payments').doc(utr).set({uid: S.user.uid, email: S.user.email || '', name: S.set.name || '', phone: S.set.phone || '', packId: p.id, coins: p.coins, price: p.price, utr: utr, status: 'pending', createdAt: Date.now()});
+    closeOv(() => toast('Request bhej di. Paise check hone ke baad coins mil jayenge.', 5000));
+  }catch(e){ toast((e && e.code === 'permission-denied') ? 'Ye UTR pehle hi use ho chuka hai, ya sahi nahi hai.' : 'Request nahi gayi. Internet check karo.', 5000); }
 }
+async function purchHistory(){
+  const close = '<button class="btn ghost" data-a="closeOv">Band karo</button>';
+  if(!FB.ready || !S.user){ openOv('sheet', `<h2>Purchase History</h2><p class="empty">History dekhne ke liye pehle login karo.</p>${close}`); return; }
+  openOv('sheet', `<h2>Purchase History</h2><p class="empty">Load ho raha hai...</p>`);
+  try{
+    const snap = await FB.db.collection('payments').where('uid', '==', S.user.uid).get();
+    const rows = []; snap.forEach(d => rows.push(d.data()));
+    rows.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    const st = {pending: ['Check ho raha hai', 'pst-p'], paid: ['Coins mil gaye', 'pst-ok'], rejected: ['Reject hua', 'pst-no']};
+    const html = rows.length ? rows.map(r => { const t = st[r.status] || st.pending; return `<div class="prow"><div><b>&#8377;${esc(r.price)} &middot; ${fmtC(r.coins)} Coins</b><small>UTR ${esc(r.utr)} &middot; ${esc(new Date(r.createdAt || 0).toLocaleDateString('en-IN'))}</small></div><span class="pst ${t[1]}">${t[0]}</span></div>`; }).join('') : '<p class="empty">Abhi koi purchase nahi hui hai.</p>';
+    if(S.ov === 'sheet') showOv('sheet', `<h2>Purchase History</h2>${html}${close}`);
+  }catch(e){ if(S.ov === 'sheet') showOv('sheet', `<h2>Purchase History</h2><p class="empty">History load nahi hui. Internet check karo.</p>${close}`); }
+}
+
 function rateUs(){
   if(INFO.playstore) window.open(INFO.playstore, '_blank');
   else toast('App abhi Playstore par live nahi hai');
@@ -1081,7 +1266,7 @@ function initFirebase(cfg){
     }
     if(!FB.app) FB.app = firebase.initializeApp(cfg);
     FB.auth = firebase.auth(); FB.db = firebase.firestore(); try{ FB.db.settings({experimentalAutoDetectLongPolling:true}); }catch(e){} FB.ready = true;
-    FB.auth.onAuthStateChanged(u => { S.user = u; S.authChecked = true; if(S.ov === 'sheet') showOv('sheet', accountSection() + settingsButtons()); else render(); });
+    FB.auth.onAuthStateChanged(u => { S.user = u; watchCoins(); S.authChecked = true; if(S.ov === 'sheet') showOv('sheet', accountSection() + settingsButtons()); else render(); });
     listenContent();
     return true;
   }catch(e){ toast('Firebase config sahi se load nahi hui'); FB.ready = false; return false; }
@@ -1348,6 +1533,8 @@ async function ai(id, hidden){
   if(gate()) return;
   const s = story(id), c = S.chats[id];
   if(!S.set.key){ aiNotReady(); return; }
+  if(!coinOk()) return;
+  let charged = false;
   if(hidden) c.messages.push({r:'u', t:hidden, h:1, id:rid()});
   const m = {r:'a', t:'', id:rid()}; c.messages.push(m);
   S.curMsgId = m.id; S.busyAt = Date.now();
@@ -1356,7 +1543,7 @@ async function ai(id, hidden){
   const MAX_TRY = 5, BACKOFF = [1500, 3000, 5000, 8000];
   for(let attempt = 0; attempt < MAX_TRY; attempt++){
     try{
-      const full = await streamCompletion(systemPrompt(s, c), history, txt => { m.t = txt; paintMsgs(id); });
+      const full = await streamCompletion(systemPrompt(s, c), history, txt => { if(!charged){ charged = true; spendCoins(); } m.t = txt; paintMsgs(id); });
       if(!full.trim()) throw new Error('AI ne kuch nahi likha. Dobara koshish karo.');
       m.t = full; m.err = null; break;
     }catch(e){
@@ -1389,6 +1576,7 @@ function truncateAfter(mid){
 }
 function contFrom(mid){
   if(S.busy) return;
+  if(!coinOk()) return;
   if(!S.set.key){ aiNotReady(); return; }
   const c = S.chats[S.chatId]; c.messages = c.messages.filter(m => !m.err);
   if(truncateAfter(mid) === -1) return;
@@ -1396,6 +1584,7 @@ function contFrom(mid){
 }
 function regenFrom(mid){
   if(S.busy) return;
+  if(!coinOk()) return;
   if(!S.set.key){ aiNotReady(); return; }
   const c = S.chats[S.chatId]; if(!c) return;
   const idx = c.messages.findIndex(m => m.id === mid);
@@ -1414,6 +1603,7 @@ function gate(){
 function sendUser(text){
   text = (text || '').trim(); if(!text) return;
   if(gate()) return;
+  if(!coinOk()) return;
   if(!S.set.key){ aiNotReady(); return; }
   if(!S.chats[S.chatId]) S.chats[S.chatId] = {messages:[], updated:Date.now()};
   const c = S.chats[S.chatId];
@@ -1548,7 +1738,7 @@ const ACT = {
   open: el => openChat(el.dataset.id),
   back: () => history.back(),
   settings: () => openSettings(),
-  profile: () => go('profile'), coins: () => go('coins'), buyPack: el => buyPack(el.dataset.id), finishWelcome, pickGender: el => {
+  profile: () => go('profile'), coins: () => go('coins'), buyPack: el => openPay(el.dataset.id), paySubmit: () => paySubmit(), coinsFromSheet: () => closeOv(() => go('coins')), finishWelcome, pickGender: el => {
     const n = $('#wName') ? $('#wName').value : '', ph = $('#wPhone') ? $('#wPhone').value : '';
     S.wGender = el.dataset.g; render();
     if($('#wName')) $('#wName').value = n; if($('#wPhone')) $('#wPhone').value = ph;
@@ -1589,8 +1779,8 @@ const ACT = {
   hint: getHints,
   pickHint: el => { const i = $('#inp'); i.value = el.dataset.t; S.tray = null; paintTray(); autosize(); syncAct(); i.focus(); },
   contFrom: el => contFrom(el.dataset.mid), regenFrom: el => regenFrom(el.dataset.mid), speakMsg: el => speakMsg(el.dataset.mid),
-  next: () => { if(S.busy) return; if(!S.set.key){ aiNotReady(); return; } const c = S.chats[S.chatId]; c.messages = c.messages.filter(m => !m.err); ai(S.chatId, NEXT_MSG); },
-  retry: () => { const c = S.chats[S.chatId]; c.messages = c.messages.filter(m => !m.err); ai(S.chatId); },
+  next: () => { if(S.busy) return; if(!coinOk()) return; if(!S.set.key){ aiNotReady(); return; } const c = S.chats[S.chatId]; c.messages = c.messages.filter(m => !m.err); ai(S.chatId, NEXT_MSG); },
+  retry: () => { if(!coinOk()) return; const c = S.chats[S.chatId]; c.messages = c.messages.filter(m => !m.err); ai(S.chatId); },
   menu: openMenu,
   replay: () => ACT.restart(),
   guide: () => closeOv(() => openOv('sheet', `<h2>Play Guide</h2><p>${esc(story(S.chatId).about || story(S.chatId).premise || story(S.chatId).sub || '')}</p>
