@@ -488,6 +488,8 @@ function applyInfoTheme(){
   if(INFO.userBubbleColor) document.documentElement.style.setProperty('--user-bubble', INFO.userBubbleColor);
   else document.documentElement.style.removeProperty('--user-bubble');
 }
+function infoToCloud(o){ return Object.assign({}, o, {faq: (o.faq || []).map(x => Array.isArray(x) ? {q: x[0] || '', a: x[1] || ''} : x)}); }
+function infoFromCloud(d){ const o = Object.assign({}, d); if(Array.isArray(o.faq)) o.faq = o.faq.map(x => Array.isArray(x) ? x : [x.q || '', x.a || '']); return o; }
 function saveInfoLocal(){ store.set('kcs.appinfo', INFO); applyInfoTheme(); }
 function faqToText(arr){ return (arr || []).map(([q,a]) => q + '\n' + a).join('\n\n'); }
 function runSplash(){
@@ -1280,7 +1282,7 @@ function listenContent(){
   }, () => { /* rules block reads until signed in - ignore silently */ });
   if(FB.infoUnsub) FB.infoUnsub();
   FB.infoUnsub = FB.db.collection('app').doc('settings').onSnapshot(doc => {
-    if(doc.exists){ INFO = Object.assign({}, APP_INFO, doc.data() || {}); saveInfoLocal(); applyInfoTheme(); if(S.view === 'profile' || S.view === 'appinfo') render(); }
+    if(doc.exists){ INFO = Object.assign({}, APP_INFO, infoFromCloud(doc.data() || {})); saveInfoLocal(); applyInfoTheme(); if(S.view === 'profile' || S.view === 'appinfo') render(); }
   }, () => {});
   if(FB.popUnsub) FB.popUnsub();
   FB.popUnsub = FB.db.collection('stats').onSnapshot(snap => {
