@@ -288,6 +288,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 #splashImg.wide{width:86%;height:70%;border-radius:20px}
 #splashName{font-family:var(--display);font-size:30px;color:var(--text);text-align:center;letter-spacing:.5px;padding:0 20px;transition:opacity .3s}
 #splashName:empty{display:none}
+#splash.photo{display:block}
+#splash.photo #splashImg,#splash.photo #splashName{display:none}
+#splashPhoto{position:absolute;inset:0;background-size:cover;background-position:center bottom;opacity:0;transition:opacity .45s}
+#splashPhoto.on{opacity:1}
+#splashShade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(70,34,38,.82) 0%,rgba(70,34,38,.42) 36%,rgba(0,0,0,0) 62%,rgba(0,0,0,.32) 100%);display:none}
+#splash.photo #splashShade{display:block}
+#splashLogo{position:absolute;left:0;right:0;top:26%;text-align:center;font-family:var(--display);font-size:56px;line-height:1.1;color:#f3f3f5;letter-spacing:.5px;text-shadow:0 2px 16px rgba(0,0,0,.45);display:none}
+#splash.photo #splashLogo{display:block}
 #lb.open{display:flex}
 #lb img{max-width:100%;max-height:100%;object-fit:contain}
 .field{margin-bottom:14px}
@@ -328,7 +336,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </head>
 <body>
 <div id="app">
-  <div id="splash"><img id="splashImg" alt=""><div id="splashName"></div></div>
+  <div id="splash"><div id="splashPhoto"></div><div id="splashShade"></div><div id="splashLogo"></div><img id="splashImg" alt=""><div id="splashName"></div></div>
   <div id="screen"></div>
   <nav id="nav" aria-label="Main">
     <button data-a="nav" data-v="home" aria-label="Home"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3z"/></svg>Home</button>
@@ -493,24 +501,29 @@ function infoFromCloud(d){ const o = Object.assign({}, d); if(Array.isArray(o.fa
 function saveInfoLocal(){ store.set('kcs.appinfo', INFO); applyInfoTheme(); }
 function faqToText(arr){ return (arr || []).map(([q,a]) => q + '\n' + a).join('\n\n'); }
 function runSplash(){
-  const el = document.getElementById('splash'), img = document.getElementById('splashImg'), nm = document.getElementById('splashName');
-  const photos = INFO.splashPhotos || [];
-  const second = photos.length ? photos[Math.floor(Math.random() * photos.length)] : null;
-  /* creator ne koi icon nahi lagaya to ye default K icon dikhta hai */
+  const el = document.getElementById('splash'); if(!el) return;
+  const finish = () => { el.classList.add('fade'); setTimeout(() => el.remove(), 420); };
+  const photos = (INFO.splashPhotos || []).filter(Boolean);
+  if(photos.length){
+    /* Kavana jaisa: poori screen photo + upar logo, 2 second, har baar random photo */
+    const pick = photos[Math.floor(Math.random() * photos.length)];
+    const ph = document.getElementById('splashPhoto'), lg = document.getElementById('splashLogo');
+    lg.textContent = String(INFO.appName || 'kahaniyon').toLowerCase();
+    el.classList.add('show', 'photo');
+    const im = new Image();
+    im.onload = () => { ph.style.backgroundImage = cssUrl(pick); requestAnimationFrame(() => ph.classList.add('on')); };
+    im.src = pick;
+    setTimeout(finish, 2000);
+    return;
+  }
+  /* koi photo nahi: pehle jaisa icon + naam */
+  const img = document.getElementById('splashImg'), nm = document.getElementById('splashName');
   const icon = INFO.appIcon || 'icon-512.png';
   img.onerror = () => { img.style.display = 'none'; };
   img.className = ''; img.src = icon;
   nm.textContent = INFO.appName || '';
   el.classList.add('show');
-  /* overlay poore time solid rehta hai (peeche ki home screen kabhi nahi dikhti);
-     sirf image aur naam apne aap fade hote hain. Overlay sirf sabse end mein hatta hai. */
-  const finish = () => { el.classList.add('fade'); setTimeout(() => el.remove(), 420); };
-  const goSecond = () => {
-    if(!second){ finish(); return; }
-    img.style.opacity = '0'; nm.style.opacity = '0';
-    setTimeout(() => { nm.textContent = ''; img.style.display = ''; img.className = 'wide'; img.src = second; img.style.opacity = '1'; setTimeout(finish, 1800); }, 320);
-  };
-  setTimeout(goSecond, 1800);
+  setTimeout(finish, 1800);
 }
 function parseFaqText(t){
   return (t || '').split(/\n\s*\n/).map(block => { const lines = block.split('\n').map(x => x.trim()).filter(Boolean);
