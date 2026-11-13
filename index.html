@@ -498,7 +498,26 @@ function applyInfoTheme(){
 }
 function infoToCloud(o){ return Object.assign({}, o, {faq: (o.faq || []).map(x => Array.isArray(x) ? {q: x[0] || '', a: x[1] || ''} : x)}); }
 function infoFromCloud(d){ const o = Object.assign({}, d); if(Array.isArray(o.faq)) o.faq = o.faq.map(x => Array.isArray(x) ? x : [x.q || '', x.a || '']); return o; }
-function saveInfoLocal(){ store.set('kcs.appinfo', INFO); applyInfoTheme(); }
+async function splashCacheGet(){ try{ return await idb.get('splash'); }catch(e){ return undefined; } }
+async function splashCachePut(v){ try{ await idb.set('splash', v); }catch(e){} }
+async function syncSplash(d){
+  try{
+    if(!d || !d.splashVer){
+      if(d && Array.isArray(d.splashPhotos) && d.splashPhotos.length) INFO.splashPhotos = d.splashPhotos;
+      return;
+    }
+    const cached = await splashCacheGet();
+    if(cached && cached.ver === d.splashVer && Array.isArray(cached.photos)){ INFO.splashPhotos = cached.photos; return; }
+    const snap = await FB.db.collection('splash').get();
+    const list = []; snap.forEach(x => list.push(x.data()));
+    list.sort((a, b) => (a.i || 0) - (b.i || 0));
+    const photos = list.map(x => x.url).filter(Boolean);
+    INFO.splashPhotos = photos;
+    await splashCachePut({ver: d.splashVer, photos: photos});
+    if(S.view === 'appinfo' && typeof rerenderAppInfo === 'function') rerenderAppInfo();
+  }catch(e){ console.warn('splash', e); }
+}
+function saveInfoLocal(){ store.set('kcs.appinfo', Object.assign({}, INFO, {splashPhotos: []})); applyInfoTheme(); }
 function faqToText(arr){ return (arr || []).map(([q,a]) => q + '\n' + a).join('\n\n'); }
 function runSplash(){
   const el = document.getElementById('splash'); if(!el) return;
@@ -1295,7 +1314,7 @@ function listenContent(){
   }, () => { /* rules block reads until signed in - ignore silently */ });
   if(FB.infoUnsub) FB.infoUnsub();
   FB.infoUnsub = FB.db.collection('app').doc('settings').onSnapshot(doc => {
-    if(doc.exists){ INFO = Object.assign({}, APP_INFO, infoFromCloud(doc.data() || {})); saveInfoLocal(); applyInfoTheme(); if(S.view === 'profile' || S.view === 'appinfo') render(); }
+    if(doc.exists){ const __d = doc.data() || {}, __keep = INFO.splashPhotos; INFO = Object.assign({}, APP_INFO, infoFromCloud(__d)); INFO.splashPhotos = __keep || []; saveInfoLocal(); syncSplash(__d); applyInfoTheme(); if(S.view === 'profile' || S.view === 'appinfo') render(); }
   }, () => {});
   if(FB.popUnsub) FB.popUnsub();
   FB.popUnsub = FB.db.collection('stats').onSnapshot(snap => {
@@ -1885,6 +1904,7 @@ document.addEventListener('keydown', e => {
 /* ---------- boot ---------- */
 async function boot(){
   loadInfoLocal();
+  try{ const sc = await splashCacheGet(); if(sc && Array.isArray(sc.photos) && sc.photos.length) INFO.splashPhotos = sc.photos; }catch(e){}
   runSplash();
   try{ const c = await idb.get('creator'); if(c) C = Object.assign({edits:{}, custom:[]}, c); }catch(e){}
   try{ const r = await fetch('content.json', {cache:'no-cache'}); if(r.ok){ const j = await r.json(); R = {edits:j.edits || {}, custom:j.custom || []}; } }catch(e){}
