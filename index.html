@@ -332,6 +332,142 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 #rot{position:fixed;inset:0;z-index:100;background:#0d0d0f;color:#f5f2ee;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
 #rot.on{display:flex}
 @media (prefers-reduced-motion:reduce){.typing i,.round.rec{animation:none}}
+/* ===== v2 look: home, chats, profile ===== */
+#app[data-v="home"],#app[data-v="chats"]{--bg:#0d0b12;--surface:#1a1522;--surface2:#241c30;--line:#2a2238;--text:#f3eef7;--muted:#8d82a0;--bar:#0d0b12}
+#app[data-v="home"] #screen,#app[data-v="chats"] #screen{background:#0d0b12}
+#app[data-v="home"] .top,#app[data-v="chats"] .top{background:transparent;border:0;padding:18px 20px 8px}
+.top .logo{font-size:26px;font-weight:500;letter-spacing:.5px}
+.ldot{color:#ff4d8d}
+.top .right{display:flex;align-items:center;gap:8px}
+.iconcirc{width:36px;height:36px;border-radius:50%;background:var(--surface);display:grid;place-items:center;color:#cfc4dc;flex:none}
+#app[data-v="home"] .tabs{display:flex;gap:8px;padding:8px 20px 14px;border-bottom:0;overflow-x:auto;scrollbar-width:none}
+#app[data-v="home"] .tab{flex:none;background:var(--surface);color:#cfc4dc;border-radius:99px;padding:7px 15px;font-size:14px;font-weight:600;height:auto;border:0}
+#app[data-v="home"] .tab[aria-selected="true"]{background:#ff4d8d;color:#1a0b12}
+#app[data-v="home"] .tab::after{display:none}
+.herorail{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 -20px;padding:0 20px}
+.hslide{flex:0 0 100%;scroll-snap-align:start;position:relative;padding-top:26px}
+.hslide::before{content:"";position:absolute;top:0;left:28px;right:28px;height:300px;border-radius:26px;background:#24102a}
+.hslide::after{content:"";position:absolute;top:12px;left:14px;right:14px;height:300px;border-radius:26px;background:#3b1634}
+.hslide .hero{position:relative;z-index:1;flex:none;width:100%;aspect-ratio:auto;height:330px;border-radius:26px;padding:16px;display:flex;flex-direction:column;overflow:hidden}
+.hslide .hero .chip{align-self:flex-start;background:#0d0b12;color:#ffc2d9;border-radius:99px;padding:4px 11px;font-size:12px}
+.hero-t{font-size:26px;font-weight:700;line-height:1.1;color:#fff;margin-bottom:4px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.hero-s{font-size:14px;color:#ffd9e6;margin-bottom:12px;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.hrow{display:flex;align-items:center;gap:12px}
+.hslide .start{flex:1;background:#f5b300;color:#3a2400;border-radius:99px;padding:12px;font-size:15px;font-weight:700;text-align:center;width:auto}
+.hcnt{font-size:13px;color:#ffd9e6;white-space:nowrap}
+.hdots{display:flex;justify-content:center;gap:5px;margin:2px 0 6px}
+.hdots .hd{width:5px;height:5px;border-radius:50%;background:#3a2f48;transition:.2s}
+.hdots .hd.on{width:18px;border-radius:3px;background:#ff4d8d}
+.lnk{font-size:13px;color:#ff4d8d;font-weight:600}
+.prail{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin:0 -20px;padding:0 20px}
+.prail .pcard{flex:0 0 124px}
+.prail .pcard .cover{aspect-ratio:124/170}
+.gtiles2{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.gtile2{text-align:center;min-width:0}
+.gtile2 .gt{height:62px;border-radius:16px;display:grid;place-items:center}
+.gtile2 span{display:block;font-size:13px;font-weight:600;margin-top:6px}
+.t10{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-bottom:12px}
+.t10n{font-size:46px;font-weight:700;line-height:1;width:34px;text-align:center;color:#0d0b12;-webkit-text-stroke:1.5px #ff4d8d}
+.t10p .cover{width:50px;height:64px;border-radius:12px}
+.t10m{flex:1;min-width:0}
+.t10t{display:block;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t10g{display:block;font-size:13px;color:var(--muted)}
+#app[data-v="home"] #nav{position:absolute;left:14px;right:14px;bottom:calc(12px + var(--safe-b));padding:7px 8px;background:#1a1522;border:1px solid #2e2540;border-radius:99px;justify-content:space-around;z-index:20}
+#app[data-v="home"] #nav button{flex:0 0 auto;flex-direction:row;gap:7px;padding:9px 16px;border-radius:99px;font-size:0;color:#cfc4dc}
+#app[data-v="home"] #nav button[aria-current="page"]{background:#ff4d8d;color:#1a0b12;font-size:14px;font-weight:700}
+#app[data-v="home"] #screen{padding-bottom:90px}
+#app[data-v="home"] .nbadge{top:3px;right:6px}
+.ctitlerow{display:flex;align-items:center;justify-content:space-between;margin:6px 0 14px}
+.ctitle{margin:0;font-size:30px;font-weight:700}
+.csearch{display:none;margin-bottom:12px}
+.csearch.open{display:flex}
+.cstack{display:flex;flex-direction:column;padding-bottom:24px}
+.cc{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:start;gap:14px;height:168px;padding:16px 18px;border-radius:28px;margin-top:-86px;background:linear-gradient(160deg,var(--c1),var(--c2));box-shadow:0 -8px 20px rgba(0,0,0,.38);cursor:pointer;color:#fff}
+.cc:first-child{margin-top:0}
+.cc-av .cover{width:58px;height:58px;border-radius:50%;border:3px solid #fff}
+.cc-meta{display:flex;flex-direction:column;gap:3px;min-width:0;padding-top:2px}
+.cc-t{display:block;font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-p{display:block;font-size:15px;color:rgba(255,255,255,.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-d{font-size:13px;color:rgba(255,255,255,.85);padding-top:4px}
+.cc .ubadge{position:absolute;right:18px;top:44px;bottom:auto}
+.cc-reply{position:absolute;left:16px;right:16px;bottom:22px;height:46px;border-radius:99px;background:#fff;color:#2a0f2a;font-weight:700;font-size:16px;display:grid;place-items:center}
+.pback{padding:10px 10px 0}
+.pv2{padding-top:6px}
+.pcx{border-radius:28px;padding:22px;background:linear-gradient(120deg,#2b2b30 0%,#1b1812 55%,#2b1f0a 100%);border:1px solid #4a3a12;cursor:pointer}
+.pcx-top{display:flex;align-items:center;justify-content:space-between}
+.pcx-brand{font-family:var(--display);font-size:34px;color:#f5b300;font-weight:500}
+.pcx-mid{display:flex;align-items:center;gap:16px;margin:18px 0 20px}
+.pcx-chip{width:84px;height:62px;border-radius:12px;background:linear-gradient(135deg,#f3d27a,#b9811a);flex:none}
+.pcx-mid small{display:block;font-size:13px;letter-spacing:3px;color:#bdb8b0}
+.pcx-bal{display:block;font-size:56px;font-weight:700;letter-spacing:6px;line-height:1.05;color:#fff}
+.pcx-bot{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.pcx-id b{display:block;font-size:22px;letter-spacing:5px;color:#fff}
+.pcx-id span{display:block;font-size:15px;color:#bdb8b0;margin-top:4px;word-break:break-all}
+.pcx-av{width:64px;height:64px;border-radius:50%;border:4px solid #f5b300;font-size:26px;font-weight:700;color:#0b2a0b;flex:none}
+.pbtn2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.pbtn2 button{height:54px;border-radius:99px;font-size:16px;font-weight:700}
+.pbtn2 .gold{background:#f5b942;color:#2a1c00}
+.pbtn2 .outl{border:2px solid #f5b942;color:#f5b942}
+.pgrid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pitem{display:flex;align-items:center;gap:12px;height:56px;padding:0 14px;border-radius:18px;background:#121214;border:1px solid #242428;font-size:16px;font-weight:600;text-align:left;color:var(--text)}
+.pitem svg{width:22px;height:22px;color:#f5b300;flex:none}
+.pitem span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pitem.danger{background:#1c0d0d;border-color:#5a1f1f;color:#ff5850}
+.pitem.danger svg{color:#ff5850}
+</style>
+<style id="fit-width">
+/* side (horizontal) hilna band: har phone ki chaudai ke hisaab se fit */
+html,body{overflow-x:hidden;max-width:100%}
+#screen{overflow-x:hidden}
+.pv2{max-width:100%;overflow-x:hidden}
+.pcx{max-width:100%;padding:clamp(16px,5vw,22px)}
+.pcx-brand{font-size:clamp(26px,8vw,34px)}
+.pcx-mid{gap:clamp(10px,4vw,16px)}
+.pcx-mid>div{min-width:0}
+.pcx-mid small{font-size:clamp(11px,3.4vw,13px);letter-spacing:clamp(1px,.8vw,3px)}
+.pcx-chip{width:clamp(60px,20vw,84px);height:clamp(46px,15vw,62px)}
+.pcx-bal{font-size:clamp(34px,12vw,56px);letter-spacing:clamp(2px,1.6vw,6px);max-width:100%}
+.pcx-id{min-width:0;flex:1}
+.pcx-id b{font-size:clamp(16px,5vw,22px);letter-spacing:clamp(2px,1.2vw,5px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcx-av{width:clamp(48px,15vw,64px);height:clamp(48px,15vw,64px)}
+.pbtn2,.pgrid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pbtn2 button{min-width:0;padding:0 8px;font-size:clamp(13px,4vw,16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pitem{min-width:0;padding:0 clamp(8px,3vw,14px);gap:clamp(6px,2vw,12px);font-size:clamp(12.5px,3.7vw,16px)}
+.pitem span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+<style id="account-screen">
+.accbar{display:flex;align-items:center;gap:6px}
+.acc-title{margin:0;font-size:22px;font-weight:600}
+.acc{display:flex;flex-direction:column;gap:16px;padding-top:18px}
+.acc-card{padding:20px;border:1px solid var(--line);border-radius:22px}
+.acc-card h2{margin:0 0 14px;font-size:22px;font-weight:600}
+.acc-row{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:9px 0;font-size:16px}
+.acc-row .k{flex:0 0 auto;color:var(--muted)}
+.acc-row .v{min-width:0;text-align:right;overflow-wrap:anywhere;color:var(--text)}
+.acc-row .v a{color:inherit;text-decoration:none}
+.acc-lab{margin:8px 0 -4px 6px;font-size:13px;letter-spacing:1.5px;color:var(--muted);font-weight:600}
+.acc-act{display:flex;align-items:center;gap:14px;width:100%;min-height:68px;padding:12px 16px;border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--text);text-align:left}
+.acc-act .ic{flex:0 0 26px;display:grid;place-items:center}
+.acc-act .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.acc-act b{font-size:17px;font-weight:600}
+.acc-act small{font-size:14px;color:var(--muted)}
+.acc-act>svg{flex:0 0 18px;color:var(--muted)}
+.acc-act.danger{border:1.5px solid #e5232d;background:transparent}
+.acc-act.danger b,.acc-act.danger .ic{color:#ef3340}
+[data-theme="light"] .acc-act.danger b,[data-theme="light"] .acc-act.danger .ic{color:#c62828}
+</style>
+<style id="welcome-google">
+.wlogin{max-width:360px;margin:0 auto 22px;text-align:left}
+.wnote{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:14.5px;line-height:1.5;color:var(--text)}
+.wok{margin-top:10px;padding:10px 14px;border-radius:12px;font-size:14px;background:rgba(34,197,94,.14);color:var(--text);overflow-wrap:anywhere}
+.wgoogle{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:50px;margin-top:12px;border-radius:14px;background:#fff;color:#1f1f1f;font-weight:700;font-size:16px;border:1px solid #dadce0}
+.wgoogle:disabled{opacity:.6}
+.btn[aria-disabled="true"]{opacity:.5}
+</style>
+<style id="welcome-email">
+.wor{display:flex;align-items:center;gap:10px;margin:18px 0 6px;color:var(--muted);font-size:13px}
+.wor::before,.wor::after{content:"";flex:1;height:1px;background:var(--line)}
+.wforgot{display:block;margin:12px auto 0;padding:8px 12px;background:none;color:var(--muted);font-size:14.5px;text-decoration:underline;text-underline-offset:3px}
 </style>
 </head>
 <body>
@@ -339,9 +475,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div id="splash"><div id="splashPhoto"></div><div id="splashShade"></div><div id="splashLogo"></div><img id="splashImg" alt=""><div id="splashName"></div></div>
   <div id="screen"></div>
   <nav id="nav" aria-label="Main">
-    <button data-a="nav" data-v="home" aria-label="Home"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 12h3v8h5v-5h4v5h5v-8h3z"/></svg>Home</button>
-    <button data-a="nav" data-v="search" aria-label="Search"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>Search</button>
-    <button data-a="nav" data-v="chats" aria-label="Chats"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M21 3 3 10.5l7 2.5 2.5 7z"/></svg>Chats<span class="nbadge" id="navBadge" hidden></span></button>
+    <button data-a="nav" data-v="home" aria-label="Home"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/></svg>Home</button>
+    <button data-a="nav" data-v="search" aria-label="Search"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>Search</button>
+    <button data-a="nav" data-v="chats" aria-label="Chats"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Chats<span class="nbadge" id="navBadge" hidden></span></button>
   </nav>
   <div id="sheet" role="dialog" aria-modal="true"><div class="sheet-body" id="sheetBody"></div></div>
   <div id="menu" class="dropmenu" role="menu"></div>
@@ -698,13 +834,15 @@ const GENRES = [
 ];
 const inGenre = (s, g) => { const hay = [s.genre, s.title, s.sub].join(' ').toLowerCase(); return g[2].some(a => hay.includes(a)); };
 const TABS = [['foryou','For you'],['new','New'],['top','Top 10'],['story','Story']].concat(GENRES.map(g => ['g_' + g[0], g[1]]));
-const header = () => `<header class="top"><h1 class="logo">kahaniyon</h1><div class="right"><button class="coinchip" data-a="coins" aria-label="Coins"><span class="coin hexk">k</span><span class="cval">${coinVal()}</span></button><button class="avatar-btn" data-a="profile" aria-label="Profile">${I.user}</button></div></header>`;
+const SEARCH_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>';
+const logoText = () => String(INFO.appName || 'kahaniyon').toLowerCase();
+const header = () => `<header class="top"><h1 class="logo">${esc(logoText())}${S.view === 'home' ? '<span class="ldot">.</span>' : ''}</h1><div class="right">${S.view === 'home' ? '<button class="iconcirc" data-a="nav" data-v="search" aria-label="Search">' + SEARCH_SVG + '</button>' : ''}<button class="coinchip" data-a="coins" aria-label="Coins"><span class="coin hexk">k</span><span class="cval">${coinVal()}</span></button><button class="avatar-btn" data-a="profile" aria-label="Profile">${I.user}</button></div></header>`;
 const tabsBar = () => `<div class="tabs" role="tablist">${TABS.map(([k,l]) => `<button class="tab" role="tab" aria-selected="${S.tab===k}" data-a="tab" data-v="${k}">${l}</button>`).join('')}</div>`;
 function hero(s){
   const has = S.chats[s.id] && S.chats[s.id].messages.length;
-  const img = hasImg(s);
-  return cv(s, 'hero', `${img ? '' : '<span class="chip">' + esc(s.genre) + '</span>' + coverTitle(s)}<div class="spacer"></div>${img ? '<div class="hero-t">' + esc(s.title) + '</div>' : ''}<button class="start" data-a="open" data-id="${s.id}">${has ? 'CONTINUE CHAT' : 'START CHAT'}</button>`,
-    null, `data-a="open" data-id="${s.id}" role="button" tabindex="0"`);
+  const img = hasImg(s), n = popOf(s.id);
+  const inner = `<span class="chip">${esc(s.genre || 'Kahani')}</span>${img ? '' : coverTitle(s)}<div class="spacer"></div><div class="hero-t">${esc(s.title)}</div>${s.sub ? '<div class="hero-s">' + esc(s.sub) + '</div>' : ''}<div class="hrow"><button class="start" data-a="open" data-id="${s.id}">${has ? 'CONTINUE CHAT' : 'START CHAT'} &rarr;</button>${n > 0 ? '<span class="hcnt">' + fmtN(n) + ' chats</span>' : ''}</div>`;
+  return `<div class="hslide">${cv(s, 'hero', inner, null, `data-a="open" data-id="${s.id}" role="button" tabindex="0"`)}</div>`;
 }
 const railItem = s => `<button class="rail-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span>${esc(s.title)}</span></button>`;
 const gridCard = s => `<button class="card" data-a="open" data-id="${s.id}">${cv(s,'',coverTitle(s))}<b>${esc(s.title)}</b><small>${esc(s.genre)}</small></button>`;
@@ -732,29 +870,36 @@ function genreTiles(L){
   }));
   return [...map.values()].sort((a, b) => b.n - a.n).slice(0, 8);
 }
+const GICON = {
+  romance: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
+  horror: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V10a7 7 0 0 1 14 0v10l-3-2-2 2-2-2-2 2-2-2z"/><circle cx="10" cy="11" r=".6"/><circle cx="14" cy="11" r=".6"/></svg>',
+  crime: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>',
+  fantasy: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 16 8"/><path d="m14 6 4 4"/><path d="M19 3v3M17.5 4.5h3"/></svg>'
+};
+const GCOLOR = {romance:['#8a2650','#ffc2d9'], horror:['#6a1f1f','#f6b4b4'], crime:['#1f4a7a','#b5d4f4'], fantasy:['#0f6e56','#9fe1cb']};
+const t10Row = (s, i) => `<button class="t10" data-a="open" data-id="${s.id}"><span class="t10n">${i}</span><span class="t10p">${cv(s, '', '', 'avatar')}</span><span class="t10m"><span class="t10t">${esc(s.title)}</span><span class="t10g">${esc(s.genre)}${popOf(s.id) > 0 ? ', ' + fmtN(popOf(s.id)) + ' chats' : ''}</span></span>${I.chev}</button>`;
 function homeView(){
   const L = allStories(); let body = '';
   if(S.tab === 'foryou'){
     const cont = continueList();
     const byNew = [...L].sort((a,b) => (b.createdAt||0) - (a.createdAt||0) || (b.isNew?1:0) - (a.isNew?1:0));
     const byPop = [...L].sort((a,b) => popOf(b.id) - popOf(a.id) || (a.rank || 999) - (b.rank || 999));
-    const newTop = byNew.slice(0, 4), popTop = byPop.slice(0, 4);
-    const shown = new Set([...newTop, ...popTop].map(s => s.id));
+    const shown = new Set([...byNew.slice(0, 8), ...byPop.slice(0, 4)].map(s => s.id));
     const rest = L.filter(s => !shown.has(s.id));
-    const catTiles = GENRES.map(g => ({g, s: L.find(x => inGenre(x, g))}));
-    const extraTiles = genreTiles(L).filter(t => !GENRES.some(g => g[2].some(a => t.name.toLowerCase().includes(a)))).slice(0, 4);
-    const genreHtml = catTiles.map(t => `<button class="gtile" data-a="tabTop" data-v="g_${t.g[0]}">${t.s ? cv(t.s, '', '', 'avatar') : '<div class="cover" style="--c1:#2a2a30;--c2:#18181c;--glow:#8a8a94"></div>'}<span>${t.g[1]}</span></button>`).join('') + extraTiles.map(t => `<button class="gtile" data-a="genre" data-v="${esc(t.name)}">${cv(t.s, '', '', 'avatar')}<span>${esc(t.name)}</span></button>`).join('');
+    const dots = byNew.slice(0, 8).map((_, i) => `<span class="hd${i === 0 ? ' on' : ''}"></span>`).join('');
+    const gt = GENRES.map(g => `<button class="gtile2" data-a="tabTop" data-v="g_${g[0]}"><div class="gt" style="background:${GCOLOR[g[0]][0]};color:${GCOLOR[g[0]][1]}">${GICON[g[0]]}</div><span>${g[1]}</span></button>`).join('');
     body = `<div class="pad"><div class="herorail">${byNew.map(hero).join('')}</div>
-      <div class="sechead"><h2>Chat jaari rakho</h2></div>
+      <div class="hdots">${dots}</div>
+      <div class="sechead"><h2>Chat jaari rakho</h2><button class="lnk" data-a="nav" data-v="chats">Sab dekho</button></div>
       ${cont.length ? `<div class="rail">${cont.map(railItem).join('')}</div>` : '<p class="empty">Abhi koi chat shuru nahi hui. Upar se kahani chuno aur AI ke saath kahani aage badhao.</p>'}
-      <div class="sechead"><h2>New Release</h2></div>
-      <div class="pgrid">${newTop.map(s => posterCard(s)).join('')}</div>
-      <button class="viewall" data-a="tabTop" data-v="new">Sab dekho ${I.chev}</button>
-      ${genreHtml ? `<div class="sechead"><h2>Popular Genres</h2></div><div class="gtiles">${genreHtml}</div>` : ''}
-      <div class="sechead"><h2>Top 10 This Week</h2></div>
-      <div class="pgrid">${popTop.map((s, i) => posterCard(s, i + 1)).join('')}</div>
-      <button class="viewall" data-a="tabTop" data-v="top">Sab dekho ${I.chev}</button>
-      ${rest.length ? `<div class="sechead"><h2>Explore More</h2></div><div class="pgrid">${rest.map(s => posterCard(s)).join('')}</div>` : ''}</div>`;
+      <div class="sechead"><h2>New release</h2><button class="lnk" data-a="tabTop" data-v="new">Sab dekho</button></div>
+      <div class="prail">${byNew.slice(0, 8).map(s => posterCard(s)).join('')}</div>
+      <div class="sechead"><h2>Popular genres</h2></div>
+      <div class="gtiles2">${gt}</div>
+      <div class="sechead"><h2>Top 10 is hafte</h2><button class="lnk" data-a="tabTop" data-v="top">Sab dekho</button></div>
+      ${byPop.slice(0, 4).map((s, i) => t10Row(s, i + 1)).join('')}
+      <div class="sechead"><h2>Explore more</h2></div>
+      <div class="pgrid">${(rest.length ? rest : L).map(s => posterCard(s)).join('')}</div></div>`;
   } else if(S.tab === 'new'){
     body = `<div class="pad">${[...L].sort((a,b) => (b.createdAt||0) - (a.createdAt||0) || (b.isNew?1:0) - (a.isNew?1:0)).map(s => listRow(s)).join('')}</div>`;
   } else if(S.tab === 'top'){
@@ -782,16 +927,17 @@ function fmtChatDate(ts){
 const lastMsgOf = c => [...c.messages].reverse().find(m => m.t && !m.err && !m.h);
 function chatRows(){
   const q = (S.cq || '').trim().toLowerCase();
-  const list = continueList().filter(s => { if(!q) return true; const last = lastMsgOf(S.chats[s.id]); return (s.title + ' ' + (last ? last.t : '')).toLowerCase().includes(q); });
+  const list = continueList().filter(s => { if(!q) return true; const last = lastMsgOf(S.chats[s.id]); return (s.title + ' ' + (last ? last.t : '')).toLowerCase().includes(q); })
+    .sort((a, b) => ((S.chats[a.id] || {}).updated || 0) - ((S.chats[b.id] || {}).updated || 0));
   if(!list.length) return `<p class="empty">${q ? 'Is naam ki koi chat nahi mili.' : 'Abhi koi chat nahi. Home se koi kahani chuno aur Chat shuru karo.'}</p>`;
-  return list.map(s => {
-    const c = S.chats[s.id], last = lastMsgOf(c), un = S.unread[s.id] > 0;
+  return list.map((s, i) => {
+    const c = S.chats[s.id], last = lastMsgOf(c), un = S.unread[s.id] > 0, isLast = i === list.length - 1;
     const pv = last ? (last.r === 'u' ? 'Tum: ' : '') + last.t.replace(/\*/g, '').replace(/\s+/g, ' ').trim().slice(0, 120) : '';
-    return `<button class="row-item chat-row${un ? ' unr' : ''}" data-a="open" data-id="${s.id}">${cv(s, '', '', 'avatar')}<span class="meta"><span class="t">${esc(s.title)}</span><span class="p">${esc(pv)}</span></span><span class="when">${esc(fmtChatDate(c.updated))}</span>${un ? `<span class="ubadge">${S.unread[s.id] > 99 ? '99+' : S.unread[s.id]}</span>` : ''}</button>`;
+    return `<div class="cc${un ? ' unr' : ''}${isLast ? ' latest' : ''}" style="--c1:${s.c1};--c2:${s.c2}" data-a="open" data-id="${s.id}" role="button" tabindex="0"><span class="cc-av">${cv(s, '', '', 'avatar')}</span><span class="cc-meta"><span class="cc-t">${esc(s.title)}</span><span class="cc-p">${esc(pv)}</span></span><span class="cc-d">${esc(fmtChatDate(c.updated))}</span>${un ? `<span class="ubadge">${S.unread[s.id] > 99 ? '99+' : S.unread[s.id]}</span>` : ''}${isLast ? '<span class="cc-reply">Reply karo</span>' : ''}</div>`;
   }).join('');
 }
 function chatsView(){
-  return header() + `<div class="pad"><label class="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg><input id="cq" type="search" placeholder="Search conversations" value="${esc(S.cq || '')}" autocomplete="off"></label><div id="chatList">${chatRows()}</div></div>`;
+  return header() + `<div class="pad"><div class="ctitlerow"><h2 class="ctitle">Aapki chats</h2><button class="iconcirc" data-a="cToggle" aria-label="Search">${SEARCH_SVG}</button></div><label class="search csearch${S.cq ? ' open' : ''}" id="csearch"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg><input id="cq" type="search" placeholder="Search conversations" value="${esc(S.cq || '')}" autocomplete="off"></label><div id="chatList" class="cstack">${chatRows()}</div></div>`;
 }
 document.addEventListener('input', e => { if(e.target && e.target.id === 'cq'){ S.cq = e.target.value; const el = document.getElementById('chatList'); if(el) el.innerHTML = chatRows(); } });
 
@@ -873,16 +1019,27 @@ function welcomeView(){
   return `<div class="pad" style="padding-top:14vh;text-align:center">
     <h1 class="logo" style="font-size:44px">kahaniyon</h1>
     <p style="color:var(--muted);font-size:16px;margin:6px 0 30px">Shuru karne se pehle apni thodi si jaankari bata do</p>
+    <div class="wlogin">
+      <div class="wnote"><b>Zaroori:</b> <b>Google</b> ya <b>Email-Password</b> se, apne <b>sahi account</b> se login karo aur apna <b>sahi phone number</b> daalo. Bina login ke aage nahi badh sakte.</div>
+      ${S.user ? `<div class="wok">&#10003; Google se login ho gaya: <b>${esc(S.user.email || S.user.displayName || 'account')}</b></div>` : ''}
+      <button class="wgoogle" data-a="wGoogle" ${S.authBusy ? 'disabled' : ''}><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.5-4.7 7.2l7.6 5.9c4.4-4.1 6.9-10.1 6.9-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>${S.user ? 'Dusre Google account se login karo' : 'Google se login karo'}</button>
+      <div class="wor"><span>ya Email se login karo</span></div>
+      <div class="field"><label for="wEmail">Email</label><input id="wEmail" type="email" inputmode="email" autocomplete="email" placeholder="tum@example.com" value="${esc((S.wTmp && S.wTmp.em) || store.get('kcs.lastEmail') || '')}"></div>
+      <div class="field"><label for="wPass">Password</label><input id="wPass" type="password" autocomplete="current-password" placeholder="Password"></div>
+      <button class="btn" style="margin-top:14px" data-a="wLogin" ${S.authBusy ? 'disabled' : ''}>Login karo</button>
+      <button class="wforgot" data-a="wReset" ${S.authBusy ? 'disabled' : ''}>Password bhool gaye?</button>
+    </div>
     <div style="text-align:left;max-width:360px;margin:0 auto">
-      <div class="field"><label for="wName">Tumhara naam</label><input id="wName" placeholder="Naam likho"></div>
-      <div class="field"><label for="wPhone">Phone number</label><input id="wPhone" type="tel" inputmode="tel" placeholder="+91XXXXXXXXXX"></div>
-      <div class="field"><label>Tum (optional)</label><div class="gpick-row">${opt('male','Ladka')}${opt('female','Ladki')}${opt('other','Kahna nahi chahta')}</div></div>
+      <div class="field"><label for="wName">Tumhara naam</label><input id="wName" placeholder="Naam likho" value="${esc((S.wTmp && S.wTmp.n) || (S.user && S.user.displayName) || '')}"></div>
+      <div class="field"><label for="wPhone">Phone number</label><input id="wPhone" type="tel" inputmode="tel" placeholder="+91XXXXXXXXXX" value="${esc((S.wTmp && S.wTmp.ph) || '')}"></div>
+      <div class="field"><label>Tum (optional)</label><div class="gpick-row">${opt('male','Male')}${opt('female','Female')}</div></div>
       <small style="color:var(--muted)">Ye sirf support aur tumhare experience ke liye hai — kisi ko dikhta nahi.</small>
     </div>
-    <button class="btn" style="max-width:360px;margin:26px auto 0" data-a="finishWelcome">Shuru karo</button>
+    <button class="btn" style="max-width:360px;margin:26px auto 0" data-a="finishWelcome" ${S.user ? '' : 'aria-disabled="true"'}>Shuru karo</button>
   </div>`;
 }
 function finishWelcome(){
+  if(!S.user){ toast(FB.ready ? 'Pehle "Google se login karo" dabao. Login ke bina aage nahi badh sakte.' : 'Internet check karo aur app dobara kholo. Google login ke bina aage nahi badh sakte.', 5000); return; }
   const name = $('#wName').value.trim(), phone = $('#wPhone').value.trim();
   if(!name) return toast('Naam likho');
   if(phone.replace(/\D/g,'').length < 10) return toast('Sahi phone number daalo (10 ank)');
@@ -900,18 +1057,18 @@ function profileView(){
   const uid = S.user ? S.user.uid.slice(0, 8) : 'guest';
   const rows = [
     ['user','Profile Details','profDetails'],['history','Message History','msgHistory'],['clock','Purchase History','purchHistory'],
-    ['star','Rate us on Playstore','rateUs'],['headset','Support','support'],['help','FAQ','faq'],
-    ['shield','Terms of Service','tos'],['doc','Privacy Policy','privacy'],['refund','Refund Policy','refund'],
-    ['shareIc','Share App','shareApp'],['gear','Account setting','settings']
+    ['gear','Account setting','account'],['headset','Support','support'],['help','FAQ','faq'],
+    ['star','Rate us','rateUs'],['shareIc','Share App','shareApp'],['shield','Terms of Service','tos'],
+    ['doc','Privacy Policy','privacy'],['refund','Refund Policy','refund']
   ];
   const avStyle = S.set.avatar ? `background-image:url('${S.set.avatar}');background-size:cover;background-position:center;color:transparent` : `background:${avColor(name)}`;
-  return `<div class="chat-head"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><div class="who"><b>Profile</b></div></div>
-  <div class="pad">
-    <div class="prof-row"><button class="prof-av" data-a="profDetails" style="${avStyle}" aria-label="Photo badlo">${init}</button><div><b class="prof-name">${esc(name)}</b><div class="prof-sub">${esc(sub)}</div></div></div>
-    <div class="coincard" data-a="coins" style="cursor:pointer"><span class="coin hexk big">k</span><div><small>Total Coins Balance</small><b class="cval">${coinVal()}</b></div></div>
-    <h2 class="h2">Settings</h2>
-    <div class="plist">${rows.map(([ic,label,act]) => `<button class="prow" data-a="${act}">${I[ic]}<span class="grow">${esc(label)}</span>${I.chev}</button>`).join('')}</div>
-    <button class="prow danger" data-a="logout">${I.logout}<span class="grow">Log out</span></button>
+  return `<div class="pback"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button></div>
+  <div class="pad pv2">
+    <div class="pcx" data-a="coins"><div class="pcx-top"><span class="pcx-brand">${esc(logoText())}</span><span class="coin hexk">k</span></div>
+      <div class="pcx-mid"><span class="pcx-chip"></span><div><small>COINS BALANCE</small><b class="cval pcx-bal">${coinVal()}</b></div></div>
+      <div class="pcx-bot"><div class="pcx-id"><b>${esc(name).toUpperCase()}</b><span>${esc(sub)}</span></div><button class="prof-av pcx-av" data-a="profDetails" style="${avStyle}" aria-label="Photo badlo">${init}</button></div></div>
+    <div class="pbtn2"><button class="gold" data-a="coins">Coins add karo</button><button class="outl" data-a="purchHistory">Purchase History</button></div>
+    <div class="pgrid2">${rows.map(([ic,label,act]) => `<button class="pitem" data-a="${act}">${I[ic]}<span>${esc(label)}</span></button>`).join('')}<button class="pitem danger" data-a="logout">${I.logout}<span>Log out</span></button></div>
     <p class="madewith">Made with ❤️ in India</p>
     <p class="verline">${esc(INFO.version)}<br>User ID: ${esc(uid)}${S.set.name ? '<br>' + esc(S.set.name) : ''}</p>
   </div>`;
@@ -1150,6 +1307,7 @@ function legalSheet(title, text){ openOv('sheet', `<h2>${esc(title)}</h2><p styl
 /* ---------- render ---------- */
 function render(){
   try{ renderInner(); }catch(e){ softFail(e); if(S.view !== 'home'){ S.view = 'home'; try{ renderInner(); }catch(e2){ softFail(e2); } } }
+  const ap = document.getElementById('app'); if(ap) ap.dataset.v = S.view;
 }
 function renderInner(){
   stopHeroAuto();
@@ -1175,13 +1333,21 @@ function renderInner(){
   if(S.view === 'coins'){
     sc.className = ''; nav.classList.add('hide'); sc.innerHTML = coinsView(); sc.scrollTop = 0; return;
   }
+  if(S.view === 'account'){
+    sc.className = ''; nav.classList.add('hide'); sc.innerHTML = accountView(); sc.scrollTop = 0; return;
+  }
   sc.className = ''; nav.classList.remove('hide');
   sc.innerHTML = ({home:homeView, search:searchView, chats:chatsView})[S.view]();
   nav.querySelectorAll('button').forEach(b => { if(b.dataset.v === S.view) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
-  sc.scrollTop = S.scroll[S.view] || 0;
-  if(S.view === 'home' && S.tab === 'foryou') startHeroAuto();
+  sc.scrollTop = S.view === 'chats' ? sc.scrollHeight : (S.scroll[S.view] || 0);
+  if(S.view === 'home' && S.tab === 'foryou'){ startHeroAuto(); bindHeroDots(); }
 }
 let heroTimer = null;
+function bindHeroDots(){
+  const rail = document.querySelector('.herorail'), dots = document.querySelectorAll('.hdots .hd');
+  if(!rail || !dots.length) return;
+  rail.addEventListener('scroll', () => { const f = rail.firstElementChild; const w = f ? f.getBoundingClientRect().width + 14 : 1; const i = Math.min(dots.length - 1, Math.round(rail.scrollLeft / w)); dots.forEach((d, k) => d.classList.toggle('on', k === i)); }, {passive: true});
+}
 function stopHeroAuto(){ if(heroTimer){ clearInterval(heroTimer); heroTimer = null; } }
 function startHeroAuto(){
   const rail = document.querySelector('.herorail'); if(!rail || rail.children.length < 2) return;
@@ -1273,6 +1439,44 @@ document.addEventListener('backbutton', e => {
 
 
 /* ---------- settings / creator sheets ---------- */
+function fmtJoined(){
+  try{
+    const t = S.user && S.user.metadata && S.user.metadata.creationTime;
+    if(!t) return '-';
+    return new Date(t).toLocaleString('en-IN', {day:'numeric', month:'short', year:'numeric', hour:'numeric', minute:'2-digit', hour12:true}).replace(/\b(am|pm)\b/i, m => m.toUpperCase());
+  }catch(e){ return '-'; }
+}
+function accRow(k, v, href){
+  const val = v ? (href ? `<a href="${esc(href)}"${/^https?:/.test(href) ? ' target="_blank" rel="noopener"' : ''}>${esc(v)}</a>` : esc(v)) : '-';
+  return `<div class="acc-row"><span class="k">${esc(k)}</span><span class="v">${val}</span></div>`;
+}
+function accountView(){
+  const u = S.user;
+  const phone = (S.set.phone || '').trim();
+  const uid = u ? u.uid.slice(0, 8) : 'guest';
+  const wa = INFO.whatsapp ? 'https://wa.me/' + String(INFO.whatsapp).replace(/\D/g, '') : '';
+  const ico = p => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  const act = (a, icon, t, sub, cls) => `<button class="acc-act${cls ? ' ' + cls : ''}" data-a="${a}"><span class="ic">${icon}</span><span class="tx"><b>${t}</b><small>${sub}</small></span>${I.chev}</button>`;
+  const extra = CREATOR_FILE
+    ? act('settings', I.gear, 'Creator Settings', 'API key, Firebase aur baaki tools')
+    : (!u ? act('settings', I.user, 'Login / Account banao', 'Google ya email se jodo') : '');
+  return `<div class="pback accbar"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><h1 class="acc-title">Account Settings</h1></div>
+  <div class="pad acc">
+    <section class="acc-card"><h2>Your Info</h2>${accRow('Phone', phone)}${u && u.email ? accRow('Email', u.email) : ''}${accRow('User ID', uid)}${accRow('Joined', fmtJoined())}</section>
+    <section class="acc-card"><h2>Support</h2>${accRow('Support', INFO.supportEmail || '', INFO.supportEmail ? 'mailto:' + INFO.supportEmail : '')}${accRow('WhatsApp', INFO.whatsapp || '', wa)}</section>
+    <div class="acc-lab">ACTIONS</div>
+    ${extra}
+    ${act('full', ico('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'), 'Full screen aur portrait lock', 'Screen ko poora bharo')}
+    ${act('eraseAll', I.trash, 'Erase All Data', 'Clear all chats and sign out', 'danger')}
+  </div>`;
+}
+function eraseAllData(){
+  if(!confirm('Sab chats is phone se mit jayenge aur logout ho jaoge. Pakka mitana hai?')) return;
+  S.chats = {}; S.unread = {};
+  store.set('kcs2.chats', {}); saveUnread();
+  const done = () => { toast('Sab chats mit gaye'); S.view = 'home'; history.replaceState({app:1, view:'home'}, ''); render(); };
+  if(FB.ready && S.user){ FB.auth.signOut().then(done, done); } else done();
+}
 function openSettings(){
   openOv('sheet', `<h2>Settings</h2>
     ${accountSection()}
@@ -1355,6 +1559,50 @@ async function doAuth(kind){
     toast(m || ('Kuch galat ho gaya (' + (e.code || 'error') + '), dobara try karo'));
   }finally{ S.authBusy = false; showOv('sheet', accountSection() + settingsButtons()); const ei = $('#accEmail'); if(ei) ei.value = email; }
 }
+const W_ERR = {
+  'auth/wrong-password':'Password galat hai.',
+  'auth/user-not-found':'Is email se koi account nahi mila. Sahi email daalo ya Google se login karo.',
+  'auth/invalid-credential':'Email ya password galat hai.',
+  'auth/invalid-email':'Email sahi format mein nahi hai.',
+  'auth/too-many-requests':'Bahut zyada koshish ho gayi. Thodi der baad dobara try karo, ya "Password bhool gaye?" dabao.',
+  'auth/network-request-failed':'Internet check karo aur dobara try karo.',
+  'auth/user-disabled':'Ye account band kar diya gaya hai.',
+  'auth/operation-not-allowed':'Email-password login Firebase mein chalu nahi hai. Firebase Console, Authentication, Sign-in method mein Email/Password chalu karo.'
+};
+function stashWelcome(){
+  S.wTmp = {n: $('#wName') ? $('#wName').value : '', ph: $('#wPhone') ? $('#wPhone').value : '', em: $('#wEmail') ? $('#wEmail').value.trim() : ''};
+  return S.wTmp;
+}
+async function welcomeLogin(){
+  if(S.authBusy) return;
+  const t = stashWelcome(), pass = $('#wPass') ? $('#wPass').value : '';
+  if(!FB.ready){ toast('Backend abhi connect nahi hai. App poori tarah band karke dobara kholo.'); return; }
+  if(!t.em || pass.length < 6){ toast('Sahi email aur 6+ letters ka password daalo'); return; }
+  S.authBusy = true;
+  try{
+    const cred = await FB.auth.signInWithEmailAndPassword(t.em, pass);
+    if(cred && cred.user){
+      S.user = cred.user; store.set('kcs.lastEmail', t.em);
+      try{ if(!S.set.name && cred.user.displayName){ S.set.name = cred.user.displayName; saveSet(); } }catch(_){}
+      toast('Login ho gaya');
+    }
+  }catch(e){
+    toast(W_ERR[e.code] || ('Kuch galat ho gaya (' + (e.code || 'error') + '), dobara try karo'), 5000);
+  }finally{ S.authBusy = false; render(); }
+}
+async function welcomeReset(){
+  if(S.authBusy) return;
+  const t = stashWelcome();
+  if(!FB.ready){ toast('Backend abhi connect nahi hai. App poori tarah band karke dobara kholo.'); return; }
+  if(!/^\S+@\S+\.\S+$/.test(t.em)){ toast('Pehle apna email daalo, phir "Password bhool gaye?" dabao.'); return; }
+  S.authBusy = true;
+  try{
+    await FB.auth.sendPasswordResetEmail(t.em);
+    toast('Password badalne ka link email par bhej diya. Inbox aur Spam dono dekho.', 6000);
+  }catch(e){
+    toast(W_ERR[e.code] || ('Kuch galat ho gaya (' + (e.code || 'error') + '), dobara try karo'), 5000);
+  }finally{ S.authBusy = false; render(); }
+}
 async function doGoogle(){
   if(S.authBusy) return;
   if(!FB.ready){ toast('Backend abhi connect nahi hai. App poori tarah band karke dobara kholo.'); return; }
@@ -1377,7 +1625,7 @@ async function doGoogle(){
   }catch(e){
     const m = {'auth/popup-closed-by-user':'Login beech me band kar diya.', 'auth/cancelled-popup-request':'', 'auth/unauthorized-domain':'Ye website Firebase me authorized nahi hai. Firebase Console me Authentication, Settings, Authorized domains me is website ko jodo.', 'auth/operation-not-allowed':'Firebase me Google login abhi on nahi hai (Authentication, Sign-in method, Google).', 'auth/network-request-failed':'Internet check karo.'}[e.code];
     if(m !== '') toast(m || ('Kuch galat ho gaya (' + (e.code || 'error') + '), dobara try karo'), 5000);
-  }finally{ S.authBusy = false; showOv('sheet', accountSection() + settingsButtons()); }
+  }finally{ S.authBusy = false; if(S.view !== 'welcome') showOv('sheet', accountSection() + settingsButtons()); }
 }
 function doLogout(){ if(FB.auth) FB.auth.signOut(); }
 function accountSection(){
@@ -1418,7 +1666,7 @@ ${c && c.memory ? 'Ab tak ki kahani ki yaad (ye sab ho chuka hai, isse kabhi mat
 - Character ke actions, expressions aur scene *is tarah star ke beech* likho (italic dikhega). Dialogue seedha likho, bina star ke.
 - Reply 2 se 4 chhote paragraph ka ho, har paragraph ke beech khaali line.
 - Har reply mein kahani thodi aage badhao: naya mod, emotion, khulasa ya khatra laao. User ne jo likha usse jodo.
-- User ki taraf se koi dialogue ya action tum mat likho.
+- USER KE LIYE KUCH MAT LIKHO (sabse zaroori rule): user ka dialogue, uski narration, uske kaam, uske jazbaat, uske vichaar ya uska faisla, kuch bhi tum nahi likhoge. Jo user ne likha wahi uska hissa hai, baaki sab wo khud agle message mein likhega. "Tumne kaha...", "Tum dar gaye...", "Tum muskuraye..." jaisi line kabhi mat likho, aur "Tum:" ya "${S.set.name}:" jaisa label bhi mat likho. Sirf apne character ka dialogue aur harkatein, doosre characters, aur scene ya mahaul (jo user ke bahar ho) likho, aur jawab aise rokho ki agla kadam user utha sake.
 - Purani baatein, naam, jagah, waade, raaz aur rishte hamesha yaad rakho. Pehle kahi gayi kisi baat se kabhi mat takrao.
 - Jab scene me doosre log hon (sahelian, dost, parivaar, colleagues), unhe bhi zinda rakho: har reply me kam se kam ek doosre character ka alag dialogue likho, uska naam likh ke (jaise Riya: ...), aur uska apna mood aur andaaz alag ho. Sirf ek hi character par mat atko. Narration me ye bhi dikhao ki baaki log kya kar ya soch rahe hain. Bina naam wala dialogue sirf tumhare mukhya character ka hoga.
 - Character mein raho. AI ya app ka zikr kabhi mat karo.
@@ -1562,6 +1810,14 @@ async function oneShotGemini(system, messages, maxTok){
   return txt;
 }
 function oneShotCompletion(system, messages, maxTok){ return S.set.kind === 'gemini' ? oneShotGemini(system, messages, maxTok) : oneShotOpenAI(system, messages, maxTok); }
+function stripUserParts(text){
+  try{
+    const nm = String((S.set && S.set.name) || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const lab = new RegExp('^\\s*\\**\\s*(?:tum|user|you|aap' + (nm ? '|' + nm : '') + ')\\s*\\**\\s*[:：]', 'i');
+    const out = String(text).split('\n').filter(l => !lab.test(l)).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    return out || text;
+  }catch(e){ return text; }
+}
 async function ai(id, hidden){
   if(S.busy) return;
   if(gate()) return;
@@ -1579,7 +1835,7 @@ async function ai(id, hidden){
     try{
       const full = await streamCompletion(systemPrompt(s, c), history, txt => { if(!charged){ charged = true; spendCoins(); } m.t = txt; paintMsgs(id); });
       if(!full.trim()) throw new Error('AI ne kuch nahi likha. Dobara koshish karo.');
-      m.t = full; m.err = null; break;
+      m.t = stripUserParts(full); m.err = null; break;
     }catch(e){
       if(isTransient(e) && attempt < MAX_TRY - 1){
         m.t = ''; m.retrying = true; paintMsgs(id);
@@ -1772,10 +2028,11 @@ const ACT = {
   open: el => openChat(el.dataset.id),
   back: () => history.back(),
   settings: () => openSettings(),
-  profile: () => go('profile'), coins: () => go('coins'), buyPack: el => openPay(el.dataset.id), paySubmit: () => paySubmit(), coinsFromSheet: () => closeOv(() => go('coins')), finishWelcome, pickGender: el => {
-    const n = $('#wName') ? $('#wName').value : '', ph = $('#wPhone') ? $('#wPhone').value : '';
+  account: () => go('account'), eraseAll: eraseAllData,
+  profile: () => go('profile'), coins: () => go('coins'), cToggle: () => { const el = document.getElementById('csearch'); if(!el) return; el.classList.toggle('open'); const inp = document.getElementById('cq'); if(el.classList.contains('open') && inp) inp.focus(); }, buyPack: el => openPay(el.dataset.id), paySubmit: () => paySubmit(), coinsFromSheet: () => closeOv(() => go('coins')), finishWelcome, pickGender: el => {
+    const n = $('#wName') ? $('#wName').value : '', ph = $('#wPhone') ? $('#wPhone').value : '', em = $('#wEmail') ? $('#wEmail').value : '', pw = $('#wPass') ? $('#wPass').value : '';
     S.wGender = el.dataset.g; render();
-    if($('#wName')) $('#wName').value = n; if($('#wPhone')) $('#wPhone').value = ph;
+    if($('#wName')) $('#wName').value = n; if($('#wPhone')) $('#wPhone').value = ph; if($('#wEmail')) $('#wEmail').value = em; if($('#wPass')) $('#wPass').value = pw;
   },
   profDetails, msgHistory, purchHistory, rateUs, support, faq,
   tos: () => legalSheet('Terms of Service', INFO.terms),
@@ -1800,6 +2057,8 @@ const ACT = {
   },
   closeOv: () => closeOv(),
   connectFb, disconnectFb, login: () => doAuth('login'), signup: () => doAuth('signup'), google: () => doGoogle(),
+  wGoogle: async () => { stashWelcome(); await doGoogle(); render(); },
+  wLogin: welcomeLogin, wReset: welcomeReset,
   togglePw: el => { const i = $('#accPass'); if(!i) return; const on = i.type === 'password'; i.type = on ? 'text' : 'password'; el.classList.toggle('on', on); },
   full: goFull,
   theme: () => { S.set.theme = S.set.theme === 'dark' ? 'light' : 'dark'; saveSet(); applyTheme(); const b = document.querySelector('[data-a="theme"]'); if(b) b.innerHTML = S.set.theme === 'dark' ? I.sun : I.moon; },
