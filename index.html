@@ -509,10 +509,14 @@ window.addEventListener('error', e => softFail(e.error || (e.message + ' @' + e.
 window.addEventListener('unhandledrejection', e => softFail(e.reason));
 setInterval(() => {
   try{
-    if(S.busy && S.busyAt && Date.now() - S.busyAt > 180000){
-      S.busy = false; S.curMsgId = null; toast('Jawab bahut der se atka tha, dobara koshish karo');
-      if(S.chatId) paintMsgs(S.chatId, true); syncAct();
-    }
+    const now = Date.now();
+    Object.keys(S.busyChats).forEach(k => {
+      const b = S.busyChats[k];
+      if(b && now - b.at > 180000){
+        delete S.busyChats[k]; toast('Jawab bahut der se atka tha, dobara koshish karo');
+        if(S.chatId === k) paintMsgs(k, true); syncAct();
+      }
+    });
   }catch(e){}
 }, 10000);
 function showMiniSpinner(){
@@ -762,7 +766,7 @@ const story = id => allStories().find(s => s.id === id);
 
 /* ---------- state ---------- */
 const S = {
-  view:'home', tab:'foryou', chatId:null, q:'', busy:false, queue:[], curMsgId:null, ov:null, after:null, rec:null, tray:null, draft:null,
+  view:'home', tab:'foryou', chatId:null, q:'', busy:false, busyChats:{}, queue:[], curMsgId:null, ov:null, after:null, rec:null, tray:null, draft:null,
   creator: sessionStorage.getItem('kcs.creator') === '1', logoTaps:0, scroll:{}, user:null, authBusy:false, wGender:'', speakingId:null, audioEl:null,
   set: Object.assign({ key:'', base:'https://api.deepseek.com', model:'deepseek-chat', name:'Tum', theme:'dark', phone:'', gender:'', provider:'deepseek', kind:'openai', avatar:'' }, store.get('kcs.settings', {})),
   chats: store.get('kcs2.chats', {}),
@@ -987,7 +991,7 @@ function chatView(){
   <div class="chatbody"><div id="msgs" aria-live="polite"><div class="pw">Powered by AI</div>${aboutCard(s)}${openingHtml(s)}<div id="thread" style="display:flex;flex-direction:column;gap:12px">${threadHtml()}</div></div>
     <button class="down" id="down" data-a="down" hidden aria-label="Neeche jao">${I.down}</button></div>
   <div class="composer"><div class="tray" id="tray"></div>
-    <div class="inputrow"><div class="pillfield"><textarea id="inp" rows="1" maxlength="1000" enterkeyhint="enter" placeholder="Apna message likho" aria-label="Message"></textarea>
+    <div class="inputrow"><div class="pillfield"><textarea id="inp" rows="1" maxlength="${MSG_MAX}" enterkeyhint="enter" placeholder="Apna message likho" aria-label="Message"></textarea>
     <button class="bulb" data-a="hint" aria-label="Suggestions">${I.bulb}</button></div>
     <button class="round" id="actBtn" data-a="act" aria-label="Mic"></button></div></div>`;
 }
@@ -999,15 +1003,25 @@ function syncAct(){
   b.setAttribute('aria-label', has ? 'Bhejo' : 'Bolkar likho');
   b.disabled = false;
 }
-const MSG_MAX = 1000;
-let __limitToast = 0;
-document.addEventListener('input', e => {
-  const t = e.target;
-  if(t && t.id === 'inp' && t.value.length >= MSG_MAX && Date.now() - __limitToast > 3000){
-    __limitToast = Date.now(); toast('Message ki had poori ho gayi (' + MSG_MAX + ' akshar). Isse zyada nahi likh sakte.', 3000);
+const MSG_MAX = 400;
+function clampMsgBox(t){
+  if(t && t.id === 'inp' && t.value.length > MSG_MAX){
+    t.value = t.value.slice(0, MSG_MAX);
+    try{ t.setSelectionRange(t.value.length, t.value.length); }catch(_){}
+    if(typeof autosize === 'function') autosize();
+    if(typeof syncAct === 'function') syncAct();
   }
+}
+document.addEventListener('beforeinput', e => {
+  const t = e.target;
+  if(!t || t.id !== 'inp' || e.isComposing || !e.inputType || e.inputType.indexOf('insert') !== 0) return;
+  const sel = (t.selectionEnd || 0) - (t.selectionStart || 0);
+  const add = e.data != null ? e.data.length : 1;
+  if(t.value.length - sel + add > MSG_MAX && e.cancelable) e.preventDefault();
 });
-function autosize(){ const i = $('#inp'); if(!i) return; i.style.height = 'auto'; const cs = getComputedStyle(i), lh = parseFloat(cs.lineHeight) || 22, pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0); const cap = Math.max(lh + pad, Math.min(lh * 6 + pad, window.innerHeight * 0.35)); i.style.height = Math.min(i.scrollHeight, cap) + 'px'; }
+document.addEventListener('input', e => clampMsgBox(e.target));
+document.addEventListener('compositionend', e => clampMsgBox(e.target));
+function autosize(){ const i = $('#inp'); if(!i) return; i.style.height = 'auto'; const cs = getComputedStyle(i), lh = parseFloat(cs.lineHeight) || 22, pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0); const cap = Math.max(lh + pad, Math.min(lh * 3 + pad, window.innerHeight * 0.35)); i.style.height = Math.min(i.scrollHeight, cap) + 'px'; }
 function updDown(){ const m = $('#msgs'), d = $('#down'); if(!m || !d) return; d.hidden = (m.scrollHeight - m.scrollTop - m.clientHeight) < 260; }
 function paintMsgs(id, force){
   if(S.view !== 'chat' || S.chatId !== id) return;
@@ -1871,8 +1885,10 @@ function stripUserParts(text){
     return out || text;
   }catch(e){ return text; }
 }
+Object.defineProperty(S, 'busy', {configurable: true, get(){ return !!(S.chatId && S.busyChats[S.chatId]); }, set(v){}});
+Object.defineProperty(S, 'curMsgId', {configurable: true, get(){ const b = S.chatId && S.busyChats[S.chatId]; return b ? b.mid : null; }, set(v){}});
 async function ai(id, hidden){
-  if(S.busy) return;
+  if(S.busyChats[id]) return;
   if(gate()) return;
   const s = story(id), c = S.chats[id];
   if(!S.set.key){ aiNotReady(); return; }
@@ -1880,8 +1896,8 @@ async function ai(id, hidden){
   let charged = false;
   if(hidden) c.messages.push({r:'u', t:hidden, h:1, id:rid()});
   const m = {r:'a', t:'', id:rid()}; c.messages.push(m);
-  S.curMsgId = m.id; S.busyAt = Date.now();
-  S.busy = true; c.updated = Date.now(); S.tray = null; paintTray(); paintMsgs(id, true);
+  S.busyChats[id] = {mid: m.id, at: Date.now()};
+  c.updated = Date.now(); if(S.chatId === id){ S.tray = null; paintTray(); } paintMsgs(id, true);
   const history = buildHistory(s, c, m);
   const MAX_TRY = 5, BACKOFF = [1500, 3000, 5000, 8000];
   for(let attempt = 0; attempt < MAX_TRY; attempt++){
@@ -1901,14 +1917,17 @@ async function ai(id, hidden){
     }
   }
   m.retrying = false;
-  S.busy = false; S.curMsgId = null; c.updated = Date.now(); saveChats(); paintMsgs(id); syncAct();
+  delete S.busyChats[id]; c.updated = Date.now(); saveChats(); paintMsgs(id); syncAct();
   if(!m.err && (m.t || '').trim() && !(S.view === 'chat' && S.chatId === id)){
     S.unread[id] = (S.unread[id] || 0) + 1; saveUnread(); updateBadges();
     if(S.view === 'chats'){ const sc = $('#screen'), st = sc.scrollTop; render(); sc.scrollTop = st; }
   }
   maybeSummarize(id);
-  const nx = S.queue.shift();
-  if(nx && S.chats[nx]){ S.chats[nx].messages = S.chats[nx].messages.filter(x => !x.err); setTimeout(() => ai(nx), 80); }
+  const qi = S.queue.indexOf(id);
+  if(qi >= 0){
+    S.queue.splice(qi, 1);
+    if(S.chats[id]){ S.chats[id].messages = S.chats[id].messages.filter(x => !x.err); setTimeout(() => ai(id), 80); }
+  }
 }
 function truncateAfter(mid){
   const c = S.chats[S.chatId]; if(!c) return -1;
@@ -2120,7 +2139,7 @@ const ACT = {
   down: () => { const m = $('#msgs'); m.scrollTo({top:m.scrollHeight, behavior:'smooth'}); },
   act: () => {
     if(S.rec){ try{ S.rec.stop(); }catch(e){} return; }
-    const i = $('#inp'); if(i.value.trim()){ const t = i.value; i.value = ''; autosize(); S.tray = null; paintTray(); syncAct(); sendUser(t); } else toast('Awaaz se likhna jald aa raha hai');
+    const i = $('#inp'); if(i.value.trim()){ const t = i.value.slice(0, MSG_MAX); i.value = ''; autosize(); S.tray = null; paintTray(); syncAct(); sendUser(t); } else toast('Awaaz se likhna jald aa raha hai');
   },
   hint: getHints,
   pickHint: el => { const i = $('#inp'); i.value = el.dataset.t; S.tray = null; paintTray(); autosize(); syncAct(); i.focus(); },
