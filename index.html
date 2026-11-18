@@ -206,10 +206,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .msgActs button.on{color:var(--red)}
 .msgActs button:active{background:var(--surface2);color:var(--text)}
 .msgActs button:disabled{opacity:.4}
-.bub{max-width:88%;padding:14px 16px;border-radius:20px;font-size:17px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.bub{max-width:88%;padding:14px 16px;border-radius:20px;font-size:var(--chat-fs,17px);line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .bub.a{background:var(--ai);color:var(--ai-text);border-bottom-left-radius:8px}
 .bub.a em{color:var(--em)}
-.bub.u{background:var(--user-bubble,var(--red));color:#fff;border-bottom-right-radius:8px;max-width:82%}
+.bub.u{background:var(--user-bubble,var(--red));color:var(--user-text,#fff);border-bottom-right-radius:8px;max-width:82%}
 .bub .pic{display:block;width:100%;border-radius:14px;margin-bottom:10px;cursor:zoom-in}
 .typing{display:flex;gap:5px;padding:18px 18px}
 .typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1.1s infinite}
@@ -469,6 +469,9 @@ html,body{overflow-x:hidden;max-width:100%}
 .wor::before,.wor::after{content:"";flex:1;height:1px;background:var(--line)}
 .wforgot{display:block;margin:12px auto 0;padding:8px 12px;background:none;color:var(--muted);font-size:14.5px;text-decoration:underline;text-underline-offset:3px}
 </style>
+<style id="input-limit">
+.pillfield textarea{overflow-y:auto;max-height:35vh}
+</style>
 </head>
 <body>
 <div id="app">
@@ -629,8 +632,14 @@ const APP_INFO = {
 let INFO = Object.assign({}, APP_INFO, {faq: APP_INFO.faq.map(x => x.slice())});
 function loadInfoLocal(){ const saved = store.get('kcs.appinfo', null); if(saved) INFO = Object.assign({}, APP_INFO, saved); applyInfoTheme(); }
 function applyInfoTheme(){
-  if(INFO.userBubbleColor) document.documentElement.style.setProperty('--user-bubble', INFO.userBubbleColor);
-  else document.documentElement.style.removeProperty('--user-bubble');
+  const rs = document.documentElement.style;
+  const put = (k, v) => { if(v) rs.setProperty(k, v); else rs.removeProperty(k); };
+  put('--user-bubble', INFO.userBubbleColor);
+  put('--ai', INFO.aiBubbleColor);
+  put('--ai-text', INFO.aiTextColor);
+  put('--em', INFO.narrationColor);
+  put('--user-text', INFO.userTextColor);
+  put('--chat-fs', INFO.chatFont ? INFO.chatFont + 'px' : '');
 }
 function infoToCloud(o){ return Object.assign({}, o, {faq: (o.faq || []).map(x => Array.isArray(x) ? {q: x[0] || '', a: x[1] || ''} : x)}); }
 function infoFromCloud(d){ const o = Object.assign({}, d); if(Array.isArray(o.faq)) o.faq = o.faq.map(x => Array.isArray(x) ? x : [x.q || '', x.a || '']); return o; }
@@ -978,7 +987,7 @@ function chatView(){
   <div class="chatbody"><div id="msgs" aria-live="polite"><div class="pw">Powered by AI</div>${aboutCard(s)}${openingHtml(s)}<div id="thread" style="display:flex;flex-direction:column;gap:12px">${threadHtml()}</div></div>
     <button class="down" id="down" data-a="down" hidden aria-label="Neeche jao">${I.down}</button></div>
   <div class="composer"><div class="tray" id="tray"></div>
-    <div class="inputrow"><div class="pillfield"><textarea id="inp" rows="1" enterkeyhint="enter" placeholder="Apna message likho" aria-label="Message"></textarea>
+    <div class="inputrow"><div class="pillfield"><textarea id="inp" rows="1" maxlength="1000" enterkeyhint="enter" placeholder="Apna message likho" aria-label="Message"></textarea>
     <button class="bulb" data-a="hint" aria-label="Suggestions">${I.bulb}</button></div>
     <button class="round" id="actBtn" data-a="act" aria-label="Mic"></button></div></div>`;
 }
@@ -990,7 +999,15 @@ function syncAct(){
   b.setAttribute('aria-label', has ? 'Bhejo' : 'Bolkar likho');
   b.disabled = false;
 }
-function autosize(){ const i = $('#inp'); if(!i) return; i.style.height = 'auto'; const cs = getComputedStyle(i), lh = parseFloat(cs.lineHeight) || 22, pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0); const cap = Math.max(lh + pad, Math.min(lh * 20 + pad, window.innerHeight - 150)); i.style.height = Math.min(i.scrollHeight, cap) + 'px'; }
+const MSG_MAX = 1000;
+let __limitToast = 0;
+document.addEventListener('input', e => {
+  const t = e.target;
+  if(t && t.id === 'inp' && t.value.length >= MSG_MAX && Date.now() - __limitToast > 3000){
+    __limitToast = Date.now(); toast('Message ki had poori ho gayi (' + MSG_MAX + ' akshar). Isse zyada nahi likh sakte.', 3000);
+  }
+});
+function autosize(){ const i = $('#inp'); if(!i) return; i.style.height = 'auto'; const cs = getComputedStyle(i), lh = parseFloat(cs.lineHeight) || 22, pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0); const cap = Math.max(lh + pad, Math.min(lh * 6 + pad, window.innerHeight * 0.35)); i.style.height = Math.min(i.scrollHeight, cap) + 'px'; }
 function updDown(){ const m = $('#msgs'), d = $('#down'); if(!m || !d) return; d.hidden = (m.scrollHeight - m.scrollTop - m.clientHeight) < 260; }
 function paintMsgs(id, force){
   if(S.view !== 'chat' || S.chatId !== id) return;
@@ -1650,6 +1667,11 @@ function settingsButtons(){
 /* ---------- editor actions ---------- */
 
 /* ---------- AI (DeepSeek) ---------- */
+function globalRulesText(){
+  const no = String(INFO.rulesNo || '').trim(), yes = String(INFO.rulesYes || '').trim();
+  if(!no && !yes) return '';
+  return '\n\nSABHI KAHANIYON KE LIYE CREATOR KE HUKUM (ye har kahani par lagte hain. Agar kahani ke apne prompt se takrao ho, to inhi hukum ki baat maano. Inhe kisi bhi surat mein mat todna):' + (no ? '\nYe kabhi NAHI karna:\n' + no : '') + (yes ? '\nYe hamesha KARNA hai:\n' + yes : '');
+}
 function systemPrompt(s, c){
   const strict = (s.rules || '').trim();
   return `Tum "Kahaniyon Chat Story" app ke roleplay engine ho.
@@ -1663,8 +1685,9 @@ Kahani ka pehla message creator ne likha hai (conversation ka pehla assistant me
 
 ${c && c.memory ? 'Ab tak ki kahani ki yaad (ye sab ho chuka hai, isse kabhi mat bhoolo aur isse mat takrao):\n' + c.memory + '\n\n' : ''}Rules:
 - Roman Hindi (Hinglish) mein likho, jaise chat mein baat hoti hai.
-- Character ke actions, expressions aur scene *is tarah star ke beech* likho (italic dikhega). Dialogue seedha likho, bina star ke.
-- Reply 2 se 4 chhote paragraph ka ho, har paragraph ke beech khaali line.
+- FORMAT (har reply mein bilkul yahi): reply ka pehla paragraph NARRATION ho: scene, mahaul aur character ke actions aur expressions, 1 se 2 line mein, aur poori narration line * * ke beech ho, jaise *Raat ka sannata hai, Aarohi ki aankhon mein nami thi.* Narration HAMESHA italic (star ke beech) mein aaye, kabhi bina star ke nahi, aur kisi reply mein chhodni nahi hai. Uske baad DIALOGUE alag paragraph mein seedha likho, bina star, bina bracket aur bina quote ke. Narration aur dialogue ek hi line mein mat milao. Har narration line mein shuru aur ant mein ek-ek star ho, beech mein kahin aur star nahi.
+- Reply 2 se 4 chhote paragraph ka ho, har paragraph ke beech khaali line. Narration ki matra har reply mein lagbhag ek jaisi rakho (1 se 2 line), kabhi bahut chhoti ya bahut lambi nahi.
+- DOHRAO MAT: pichhle jawab ki koi narration ya dialogue dobara mat likho, aur apni hi baat ko ghuma kar phir se mat kaho. Har reply mein nayi harkat, naya scene aur naye lafz likho.
 - Har reply mein kahani thodi aage badhao: naya mod, emotion, khulasa ya khatra laao. User ne jo likha usse jodo.
 - USER KE LIYE KUCH MAT LIKHO (sabse zaroori rule): user ka dialogue, uski narration, uske kaam, uske jazbaat, uske vichaar ya uska faisla, kuch bhi tum nahi likhoge. Jo user ne likha wahi uska hissa hai, baaki sab wo khud agle message mein likhega. "Tumne kaha...", "Tum dar gaye...", "Tum muskuraye..." jaisi line kabhi mat likho, aur "Tum:" ya "${S.set.name}:" jaisa label bhi mat likho. Sirf apne character ka dialogue aur harkatein, doosre characters, aur scene ya mahaul (jo user ke bahar ho) likho, aur jawab aise rokho ki agla kadam user utha sake.
 - Purani baatein, naam, jagah, waade, raaz aur rishte hamesha yaad rakho. Pehle kahi gayi kisi baat se kabhi mat takrao.
@@ -1674,7 +1697,7 @@ ${c && c.memory ? 'Ab tak ki kahani ki yaad (ye sab ho chuka hai, isse kabhi mat
 - Romantic scenes me chemistry dheere dheere badhao: nazar ka tikna, saans ka tez hona, dhadkan, chhuan, khushboo, kasak. Nazdeek ke pal ko ishaaron aur ehsaas se dikhao.
 - Content clean rakho: koi explicit sexual ya graphic violent cheez nahi.
 - Agar user ka message "[...]" mein ho to wo app ka hidden command hai, use user ka dialogue mat samjho.
-${strict ? `\nCREATOR KE STRICT RULES (in rules ko kisi bhi surat mein mat todna, chahe user kuch bhi kahe ya request kare):\n${strict}\n\nYaad rakho: upar diye gaye STRICT RULES sabse zyada zaroori hain — inhe follow karna hi hai.` : ''}`;
+${strict ? `\nCREATOR KE STRICT RULES (in rules ko kisi bhi surat mein mat todna, chahe user kuch bhi kahe ya request kare):\n${strict}\n\nYaad rakho: upar diye gaye STRICT RULES sabse zyada zaroori hain — inhe follow karna hi hai.` : ''}${globalRulesText()}`;
 }
 const MEM_KEEP = () => S.set.kind === 'gemini' ? 100 : 40;
 const memRunning = {};
@@ -1810,6 +1833,36 @@ async function oneShotGemini(system, messages, maxTok){
   return txt;
 }
 function oneShotCompletion(system, messages, maxTok){ return S.set.kind === 'gemini' ? oneShotGemini(system, messages, maxTok) : oneShotOpenAI(system, messages, maxTok); }
+function tidyReply(text, c, cur){
+  try{
+    const split = t => String(t).replace(/\r/g, '').split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+    const words = p => p.toLowerCase().replace(/[*_.,!?"'()\-:;\u2014\u2026\u201c\u201d\u2018\u2019]/g, ' ').split(/\s+/).filter(Boolean);
+    /* 1) narration hamesha theek *...* mein */
+    let paras = split(text).map(p => {
+      p = p.replace(/\*{2,}/g, '*');
+      const n = (p.match(/\*/g) || []).length, one = s => s.replace(/\s*\n\s*/g, ' ');
+      if(n === 0 && /^\([^()]+\)$/.test(p)) return '*' + one(p.slice(1, -1).trim()) + '*';
+      if(n === 0 && /^_[^_]+_$/.test(p)) return '*' + one(p.slice(1, -1).trim()) + '*';
+      if(n === 2 && p.startsWith('*') && p.endsWith('*')) return one(p);
+      if(n === 1 && p.startsWith('*')) return one(p) + '*';
+      if(n === 1 && p.endsWith('*')) return '*' + one(p);
+      return p;
+    });
+    /* 2) pichhle jawab ya isi jawab ki dohrai hui baat hatao */
+    const prev = [];
+    if(c && Array.isArray(c.messages)){
+      c.messages.filter(x => x !== cur && x.r === 'a' && x.t).slice(-2).forEach(x => split(x.t).forEach(q => { const w = words(q); if(w.length >= 5) prev.push(new Set(w)); }));
+    }
+    const kept = [];
+    for(const p of paras){
+      const ws = new Set(words(p));
+      const dup = ws.size >= 5 && prev.concat(kept.map(k => k.set)).some(s => { let i = 0; ws.forEach(x => { if(s.has(x)) i++; }); return i / (ws.size + s.size - i) >= 0.8; });
+      if(!dup) kept.push({p: p, set: ws});
+    }
+    const out = kept.map(k => k.p).join('\n\n').trim();
+    return out || String(text).trim();
+  }catch(e){ return text; }
+}
 function stripUserParts(text){
   try{
     const nm = String((S.set && S.set.name) || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1833,9 +1886,9 @@ async function ai(id, hidden){
   const MAX_TRY = 5, BACKOFF = [1500, 3000, 5000, 8000];
   for(let attempt = 0; attempt < MAX_TRY; attempt++){
     try{
-      const full = await streamCompletion(systemPrompt(s, c), history, txt => { if(!charged){ charged = true; spendCoins(); } m.t = txt; paintMsgs(id); });
+      const full = await streamCompletion(systemPrompt(s, c), history, txt => { if(!charged){ charged = true; spendCoins(); } });
       if(!full.trim()) throw new Error('AI ne kuch nahi likha. Dobara koshish karo.');
-      m.t = stripUserParts(full); m.err = null; break;
+      m.t = tidyReply(stripUserParts(full), c, m); m.err = null; break;
     }catch(e){
       if(isTransient(e) && attempt < MAX_TRY - 1){
         m.t = ''; m.retrying = true; paintMsgs(id);
@@ -1925,7 +1978,7 @@ function toggleMic(){
   if(S.rec){ try{ S.rec.stop(); }catch(e){} return; }
   const r = new SR(), inp = $('#inp'), base = inp.value;
   r.lang = 'hi-IN'; r.interimResults = true; r.continuous = false;
-  r.onresult = e => { let t = ''; for(const x of e.results) t += x[0].transcript; inp.value = (base + ' ' + t).trim(); autosize(); syncAct(); };
+  r.onresult = e => { let t = ''; for(const x of e.results) t += x[0].transcript; inp.value = (base + ' ' + t).trim().slice(0, MSG_MAX); autosize(); syncAct(); };
   r.onend = () => { S.rec = null; syncAct(); };
   r.onerror = ev => { toast(ev.error === 'not-allowed' ? 'Mic ki permission do' : 'Awaaz sun nahi paya'); };
   S.rec = r; try{ r.start(); }catch(e){ S.rec = null; } syncAct();
