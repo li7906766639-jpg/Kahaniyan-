@@ -606,7 +606,7 @@ const BASE = [
     about:'Parcel tumhara tha, magar khola kisi aur ne. Ab dono ke beech ek funny, pyaari nok-jhok shuru hone wali hai.',
     opening:'*Tumhare flat ki ghanti baji hai. Darwaze par ek ladki khadi hai, ek haath mein chai ka cup aur doosre mein aadha khula hua parcel.*\n\n*Uske baal clip mein atke hain aur aankhon ke neeche neend ke nishaan hain.*\n\nDekho, pehle ye bata do ki ye parcel tumhara hai ya nahi. Kyunki mujhe lagta hai maine galti se khol diya. Aur haan, uske andar jo hai wo kaafi... personal lag raha hai, {user}.\n\n*Meher sharminda muskaan ke saath tumhe parcel thama deti hai.*' }
 ].map(b => Object.assign({}, BLANK, b));
-const EDIT_FIELDS = ['title','sub','genre','hero','about','opening','persona','premise','price','images','avatar','openImage','note','rules','gender'];
+const EDIT_FIELDS = ['title','sub','genre','hero','about','opening','persona','premise','price','images','avatar','openImage','note','rules','gender','narr'];
 const PALETTES = [['#2a1246','#0a0612','#b48cf0','crown'],['#123a2a','#060d0a','#5fd39a','eye'],['#3d1a10','#0d0705','#f0a06a','arch'],['#0f2440','#050a12','#6fb1f0','paper'],['#3b1230','#0f060d','#f08ac4','pin']];
 /* App ki jaankari - ise apne hisaab se badal lo */
 const APP_INFO = {
@@ -783,7 +783,7 @@ async function syncMyChats(now){
   if(!FB.ready || !phone) return;
   const chats = {};
   Object.entries(S.chats).forEach(([id, c]) => { const s = story(id); if(s && c.messages.length) chats[id] = {title:s.title, updated:c.updated, messages:c.messages.filter(m => !m.err)}; });
-  try{ await FB.db.collection('chatlogs').doc(phone).set({name:S.set.name, phone, updatedAt:Date.now(), chats}, {merge:false}); }
+  try{ await FB.db.collection('chatlogs').doc(phone).set({name:S.set.name, phone, uid:(S.user ? S.user.uid : ''), updatedAt:Date.now(), chats}, {merge:false}); }
   catch(e){ if(now) toast('Chat backup nahi ho paya. Firestore rules check karo.'); }
 }
 const saveSet = () => store.set('kcs.settings', S.set);
@@ -854,7 +854,7 @@ const tabsBar = () => `<div class="tabs" role="tablist">${TABS.map(([k,l]) => `<
 function hero(s){
   const has = S.chats[s.id] && S.chats[s.id].messages.length;
   const img = hasImg(s), n = popOf(s.id);
-  const inner = `<span class="chip">${esc(s.genre || 'Kahani')}</span>${img ? '' : coverTitle(s)}<div class="spacer"></div><div class="hero-t">${esc(s.title)}</div>${s.sub ? '<div class="hero-s">' + esc(s.sub) + '</div>' : ''}<div class="hrow"><button class="start" data-a="open" data-id="${s.id}">${has ? 'CONTINUE CHAT' : 'START CHAT'} &rarr;</button>${n > 0 ? '<span class="hcnt">' + fmtN(n) + ' chats</span>' : ''}</div>`;
+  const inner = `${img ? '' : coverTitle(s)}<div class="spacer"></div><div class="hero-t">${esc(s.title)}</div>${s.sub ? '<div class="hero-s">' + esc(s.sub) + '</div>' : ''}<div class="hrow"><button class="start" data-a="open" data-id="${s.id}">${has ? 'CONTINUE CHAT' : 'START CHAT'} &rarr;</button>${n > 0 ? '<span class="hcnt">' + fmtN(n) + ' chats</span>' : ''}</div>`;
   return `<div class="hslide">${cv(s, 'hero', inner, null, `data-a="open" data-id="${s.id}" role="button" tabindex="0"`)}</div>`;
 }
 const railItem = s => `<button class="rail-item" data-a="open" data-id="${s.id}">${cv(s,'','','avatar')}<span>${esc(s.title)}</span></button>`;
@@ -1069,6 +1069,13 @@ function welcomeView(){
     <button class="btn" style="max-width:360px;margin:26px auto 0" data-a="finishWelcome" ${S.user ? '' : 'aria-disabled="true"'}>Shuru karo</button>
   </div>`;
 }
+function goWelcomeAfterLogout(){
+  closeOv(() => {
+    S.wTmp = null; S.wGender = ''; S.chatId = null;
+    store.set('kcs.onboarded', false);
+    S.view = 'welcome'; history.replaceState({app:1, view:'welcome'}, ''); render();
+  });
+}
 function finishWelcome(){
   if(!S.user){ toast(FB.ready ? 'Pehle "Google se login karo" dabao. Login ke bina aage nahi badh sakte.' : 'Internet check karo aur app dobara kholo. Google login ke bina aage nahi badh sakte.', 5000); return; }
   const name = $('#wName').value.trim(), phone = $('#wPhone').value.trim();
@@ -1136,9 +1143,14 @@ function watchCoins(){
   const ref = FB.db.collection('users').doc(S.user.uid);
   S.coinsUnsub = ref.onSnapshot(snap => {
     if(snap.exists){ S.coins = Number((snap.data() || {}).coins) || 0; }
-    else if(!snap.metadata.fromCache){
-      S.coins = WELCOME_COINS;
-      ref.set({coins: WELCOME_COINS, createdAt: Date.now(), updatedAt: Date.now()}).then(() => toast('Swagat hai! ' + WELCOME_COINS + ' free coins mile (' + (WELCOME_COINS / COIN_COST) + ' messages)', 5000)).catch(e => console.warn('welcome', e));
+    else if(!snap.metadata.fromCache && !S.welcoming){
+      S.welcoming = true;
+      FB.db.collection('app').doc('settings').get().then(d => {
+        const w = Number(((d && d.exists && d.data()) || {}).welcomeCoins);
+        const wc = (Number.isFinite(w) && w >= 0 && w <= 100000) ? Math.floor(w) : WELCOME_COINS;
+        S.coins = wc; updateCoinUI();
+        return ref.set({coins: wc, createdAt: Date.now(), updatedAt: Date.now()}).then(() => toast('Swagat hai! ' + wc + ' free coins mile (' + Math.floor(wc / COIN_COST) + ' messages)', 5000));
+      }).catch(e => console.warn('welcome', e)).then(() => { S.welcoming = false; });
     }
     updateCoinUI();
   }, e => console.warn('coins', e));
@@ -1325,9 +1337,17 @@ function rateUs(){
   if(INFO.playstore) window.open(INFO.playstore, '_blank');
   else toast('App abhi Playstore par live nahi hai');
 }
+function waLink(v){
+  v = String(v || '').trim();
+  if(!v) return '';
+  if(/^https?:\/\//i.test(v)) return v;
+  if(/^(www\.)?(wa\.me|chat\.whatsapp\.com|whatsapp\.com|api\.whatsapp\.com)\//i.test(v)) return 'https://' + v;
+  const d = v.replace(/\D/g, '');
+  return d ? 'https://wa.me/' + d : '';
+}
 function support(){
   const mail = INFO.supportEmail ? `<a href="mailto:${esc(INFO.supportEmail)}">Email par likho — ${esc(INFO.supportEmail)}</a>` : '';
-  const wa = INFO.whatsapp ? `<a href="https://wa.me/${esc(INFO.whatsapp.replace(/\D/g,''))}" target="_blank" rel="noopener">WhatsApp par baat karo</a>` : '';
+  const wa = waLink(INFO.whatsapp) ? `<a href="${esc(waLink(INFO.whatsapp))}" target="_blank" rel="noopener">WhatsApp par baat karo</a>` : '';
   openOv('sheet', `<h2>Support</h2><p>Koi dikkat ho ya sawaal ho, hume batao.</p><div class="linklist">${mail}${wa}</div><button class="btn ghost" data-a="closeOv">Band karo</button>`);
 }
 function faq(){
@@ -1485,7 +1505,7 @@ function accountView(){
   const u = S.user;
   const phone = (S.set.phone || '').trim();
   const uid = u ? u.uid.slice(0, 8) : 'guest';
-  const wa = INFO.whatsapp ? 'https://wa.me/' + String(INFO.whatsapp).replace(/\D/g, '') : '';
+  const wa = waLink(INFO.whatsapp);
   const ico = p => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
   const act = (a, icon, t, sub, cls) => `<button class="acc-act${cls ? ' ' + cls : ''}" data-a="${a}"><span class="ic">${icon}</span><span class="tx"><b>${t}</b><small>${sub}</small></span>${I.chev}</button>`;
   const extra = CREATOR_FILE
@@ -1494,10 +1514,9 @@ function accountView(){
   return `<div class="pback accbar"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><h1 class="acc-title">Account Settings</h1></div>
   <div class="pad acc">
     <section class="acc-card"><h2>Your Info</h2>${accRow('Phone', phone)}${u && u.email ? accRow('Email', u.email) : ''}${accRow('User ID', uid)}${accRow('Joined', fmtJoined())}</section>
-    <section class="acc-card"><h2>Support</h2>${accRow('Support', INFO.supportEmail || '', INFO.supportEmail ? 'mailto:' + INFO.supportEmail : '')}${accRow('WhatsApp', INFO.whatsapp || '', wa)}</section>
+    <section class="acc-card"><h2>Support</h2>${accRow('Support', INFO.supportEmail || '', INFO.supportEmail ? 'mailto:' + INFO.supportEmail : '')}${accRow('WhatsApp', wa ? 'Chat karo' : '', wa)}</section>
     <div class="acc-lab">ACTIONS</div>
     ${extra}
-    ${act('full', ico('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'), 'Full screen aur portrait lock', 'Screen ko poora bharo')}
     ${act('eraseAll', I.trash, 'Erase All Data', 'Clear all chats and sign out', 'danger')}
   </div>`;
 }
@@ -1505,7 +1524,7 @@ function eraseAllData(){
   if(!confirm('Sab chats is phone se mit jayenge aur logout ho jaoge. Pakka mitana hai?')) return;
   S.chats = {}; S.unread = {};
   store.set('kcs2.chats', {}); saveUnread();
-  const done = () => { toast('Sab chats mit gaye'); S.view = 'home'; history.replaceState({app:1, view:'home'}, ''); render(); };
+  const done = () => { toast('Sab chats mit gaye'); goWelcomeAfterLogout(); };
   if(FB.ready && S.user){ FB.auth.signOut().then(done, done); } else done();
 }
 function openSettings(){
@@ -1675,7 +1694,7 @@ function accountSection(){
     <button class="btn ghost" data-a="logout">Logout karo</button>`;
 }
 function settingsButtons(){
-  return `<button class="btn ghost" data-a="full">Full screen aur portrait lock</button><button class="btn ghost" data-a="closeOv">Band karo</button>`;
+  return `<button class="btn ghost" data-a="closeOv">Band karo</button>`;
 }
 
 /* ---------- editor actions ---------- */
@@ -1685,6 +1704,17 @@ function globalRulesText(){
   const no = String(INFO.rulesNo || '').trim(), yes = String(INFO.rulesYes || '').trim();
   if(!no && !yes) return '';
   return '\n\nSABHI KAHANIYON KE LIYE CREATOR KE HUKUM (ye har kahani par lagte hain. Agar kahani ke apne prompt se takrao ho, to inhi hukum ki baat maano. Inhe kisi bhi surat mein mat todna):' + (no ? '\nYe kabhi NAHI karna:\n' + no : '') + (yes ? '\nYe hamesha KARNA hai:\n' + yes : '');
+}
+function narrRules(s){
+  if(s && s.narr === false) return "- NARRATION BAND HAI (is kahani mein): sirf character ka DIALOGUE likho, jaise wo seedha bol raha ho. Koi narration nahi: scene ya mahaul ka varnan nahi, koi harkat ya expression (jaise *muskuraya*, *haath pakda*) nahi, aur * star ya bracket ka istemal bilkul nahi. Upar jahan bhi scene, harkat, ehsaas ya narration likhne ki baat aayi hai, wo is kahani par lagu nahi hoti; jo dikhana ho use sirf bole hue shabdon mein hi kaho.\n- Reply 1 se 3 chhote paragraph ka ho, har paragraph ke beech khaali line, sab bole hue dialogue.\n- DOHRAO MAT: pichhle jawab ka koi dialogue dobara mat likho, aur apni hi baat ko ghuma kar phir se mat kaho. Har reply mein naye lafz aur nayi baat likho.\n";
+  return "- FORMAT (har reply mein bilkul yahi): reply ka pehla paragraph NARRATION ho: scene, mahaul aur character ke actions aur expressions, 1 se 2 line mein, aur poori narration line * * ke beech ho, jaise *Raat ka sannata hai, Aarohi ki aankhon mein nami thi.* Narration HAMESHA italic (star ke beech) mein aaye, kabhi bina star ke nahi, aur kisi reply mein chhodni nahi hai. Uske baad DIALOGUE alag paragraph mein seedha likho, bina star, bina bracket aur bina quote ke. Narration aur dialogue ek hi line mein mat milao. Har narration line mein shuru aur ant mein ek-ek star ho, beech mein kahin aur star nahi.\n- Reply 2 se 4 chhote paragraph ka ho, har paragraph ke beech khaali line. Narration ki matra har reply mein lagbhag ek jaisi rakho (1 se 2 line), kabhi bahut chhoti ya bahut lambi nahi.\n- DOHRAO MAT: pichhle jawab ki koi narration ya dialogue dobara mat likho, aur apni hi baat ko ghuma kar phir se mat kaho. Har reply mein nayi harkat, naya scene aur naye lafz likho.\n";
+}
+function dropNarration(text){
+  try{
+    const out = String(text).replace(/\*+[^*\n]+\*+/g, ' ').replace(/\*/g, '')
+      .split(/\n\s*\n/).map(p => p.split('\n').map(l => l.replace(/[ \t]{2,}/g, ' ').trim()).filter(Boolean).join('\n')).filter(Boolean).join('\n\n').trim();
+    return out || String(text).trim();
+  }catch(e){ return text; }
 }
 function systemPrompt(s, c){
   const strict = (s.rules || '').trim();
@@ -1699,9 +1729,7 @@ Kahani ka pehla message creator ne likha hai (conversation ka pehla assistant me
 
 ${c && c.memory ? 'Ab tak ki kahani ki yaad (ye sab ho chuka hai, isse kabhi mat bhoolo aur isse mat takrao):\n' + c.memory + '\n\n' : ''}Rules:
 - Roman Hindi (Hinglish) mein likho, jaise chat mein baat hoti hai.
-- FORMAT (har reply mein bilkul yahi): reply ka pehla paragraph NARRATION ho: scene, mahaul aur character ke actions aur expressions, 1 se 2 line mein, aur poori narration line * * ke beech ho, jaise *Raat ka sannata hai, Aarohi ki aankhon mein nami thi.* Narration HAMESHA italic (star ke beech) mein aaye, kabhi bina star ke nahi, aur kisi reply mein chhodni nahi hai. Uske baad DIALOGUE alag paragraph mein seedha likho, bina star, bina bracket aur bina quote ke. Narration aur dialogue ek hi line mein mat milao. Har narration line mein shuru aur ant mein ek-ek star ho, beech mein kahin aur star nahi.
-- Reply 2 se 4 chhote paragraph ka ho, har paragraph ke beech khaali line. Narration ki matra har reply mein lagbhag ek jaisi rakho (1 se 2 line), kabhi bahut chhoti ya bahut lambi nahi.
-- DOHRAO MAT: pichhle jawab ki koi narration ya dialogue dobara mat likho, aur apni hi baat ko ghuma kar phir se mat kaho. Har reply mein nayi harkat, naya scene aur naye lafz likho.
+${narrRules(s)}
 - Har reply mein kahani thodi aage badhao: naya mod, emotion, khulasa ya khatra laao. User ne jo likha usse jodo.
 - USER KE LIYE KUCH MAT LIKHO (sabse zaroori rule): user ka dialogue, uski narration, uske kaam, uske jazbaat, uske vichaar ya uska faisla, kuch bhi tum nahi likhoge. Jo user ne likha wahi uska hissa hai, baaki sab wo khud agle message mein likhega. "Tumne kaha...", "Tum dar gaye...", "Tum muskuraye..." jaisi line kabhi mat likho, aur "Tum:" ya "${S.set.name}:" jaisa label bhi mat likho. Sirf apne character ka dialogue aur harkatein, doosre characters, aur scene ya mahaul (jo user ke bahar ho) likho, aur jawab aise rokho ki agla kadam user utha sake.
 - Purani baatein, naam, jagah, waade, raaz aur rishte hamesha yaad rakho. Pehle kahi gayi kisi baat se kabhi mat takrao.
@@ -1904,7 +1932,7 @@ async function ai(id, hidden){
     try{
       const full = await streamCompletion(systemPrompt(s, c), history, txt => { if(!charged){ charged = true; spendCoins(); } });
       if(!full.trim()) throw new Error('AI ne kuch nahi likha. Dobara koshish karo.');
-      m.t = tidyReply(stripUserParts(full), c, m); m.err = null; break;
+      { const t1 = tidyReply(stripUserParts(full), c, m); m.t = (s.narr === false) ? dropNarration(t1) : t1; } m.err = null; break;
     }catch(e){
       if(isTransient(e) && attempt < MAX_TRY - 1){
         m.t = ''; m.retrying = true; paintMsgs(id);
@@ -2085,6 +2113,7 @@ async function goFull(){
 if(screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', checkOrient);
 addEventListener('orientationchange', checkOrient);
 document.addEventListener('click', function once(){ tryLock(); document.removeEventListener('click', once); }, {once:false});
+document.addEventListener('visibilitychange', () => { if(!document.hidden) tryLock(); });
 
 /* ---------- actions ---------- */
 function openChat(id){
@@ -2124,7 +2153,7 @@ const ACT = {
   rmProfAvatar: () => { S.set.avatar = ''; saveSet(); showOv('sheet', profDetailsHtml()); },
   openFromHist: el => { const id = el.dataset.id; closeOv(() => openChat(id)); },
   logout: () => {
-    if(FB.ready && S.user){ if(!confirm('Logout karna hai?')) return; FB.auth.signOut().then(() => toast('Logout ho gaya')); }
+    if(FB.ready && S.user){ if(!confirm('Logout karna hai?')) return; FB.auth.signOut().then(() => { toast('Logout ho gaya'); goWelcomeAfterLogout(); }); }
     else toast('Abhi login nahi hai. "Account setting" mein backend jodkar login karo.');
   },
   closeOv: () => closeOv(),
