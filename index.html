@@ -778,14 +778,95 @@ function saveUnread(){ store.set('kcs.unread', S.unread); }
 function updateBadges(){ const t = Object.keys(S.unread).filter(k => S.chats[k]).reduce((a, k) => a + (S.unread[k] || 0), 0); const b = $('#navBadge'); if(!b) return; b.textContent = t > 99 ? '99+' : String(t); b.hidden = t < 1; }
 function saveChats(){ store.set('kcs2.chats', S.chats); clearTimeout(syncTimer); syncTimer = setTimeout(() => syncMyChats(false), 1500); }
 function phoneKey(p){ return (p || '').replace(/[^\d+]/g, ''); }
-async function syncMyChats(now){
-  const phone = phoneKey(S.set.phone);
-  if(!FB.ready || !phone) return;
-  const chats = {};
-  Object.entries(S.chats).forEach(([id, c]) => { const s = story(id); if(s && c.messages.length) chats[id] = {title:s.title, updated:c.updated, messages:c.messages.filter(m => !m.err)}; });
-  try{ await FB.db.collection('chatlogs').doc(phone).set({name:S.set.name, phone, uid:(S.user ? S.user.uid : ''), updatedAt:Date.now(), chats}, {merge:false}); }
-  catch(e){ if(now) toast('Chat backup nahi ho paya. Firestore rules check karo.'); }
+let syncChain = Promise.resolve(), lastSyncErrToast = 0;
+function queueSync(fn){ const p = syncChain.then(fn, fn); syncChain = p.then(() => {}, () => {}); return p; }
+function syncErrText(e){
+  const c = e && e.code, m = String((e && e.message) || '');
+  if(c === 'toolarge') return 'Chat backup bahut bada ho gaya (Firebase ki 1 MB ki limit). Cloud sync nahi hua.';
+  if(!navigator.onLine || c === 'unavailable' || c === 'deadline-exceeded' || /network|offline|failed to get document/i.test(m)) return 'Internet nahi hai ya Firebase se connect nahi ho paya. Cloud sync nahi hua.';
+  if(c === 'permission-denied') return 'Cloud sync ki permission nahi mili. Firestore rules check karo.';
+  if(c === 'unauthenticated') return 'Cloud sync ke liye pehle login karo.';
+  if(c === 'resource-exhausted') return 'Firebase ki limit (quota) khatam ho gayi. Thodi der baad dobara koshish karo.';
+  if(c === 'invalid-argument' && /size|exceed|large/i.test(m)) return 'Chat backup bahut bada ho gaya (Firebase ki 1 MB ki limit). Cloud sync nahi hua.';
+  return 'Cloud sync mein dikkat aayi (' + (c || 'error') + ').';
 }
+function reportSyncErr(e, loud){
+  console.warn('cloud sync', e);
+  const t = Date.now(), denied = !!(e && e.code === 'permission-denied');
+  if(loud || (!denied && t - lastSyncErrToast > 120000)){ lastSyncErrToast = t; toast(syncErrText(e), 5000); }
+}
+const validCount = c => ((c && c.messages) || []).filter(m => m && !m.err && (m.r === 'u' || m.t)).length;
+function mergeCloudChat(id, cc){
+  if(!cc || !Array.isArray(cc.messages) || !cc.messages.length) return false;
+  const lc = S.chats[id];
+  if(!lc || !Array.isArray(lc.messages) || !lc.messages.length){
+    S.chats[id] = Object.assign({}, lc || {}, {messages: cc.messages, updated: cc.updated || Date.now(), memory: cc.memory || (lc && lc.memory) || '', memUpTo: cc.memory ? (cc.memUpTo || 0) : ((lc && lc.memUpTo) || 0)});
+    return true;
+  }
+  const cn = validCount(cc), ln = validCount(lc);
+  const cloudWins = cn > ln || (cn === ln && (cc.updated || 0) > (lc.updated || 0));
+  let changed = false;
+  if(cloudWins){
+    const keepOld = !!lc.memory && (!cc.memory || (lc.memUpTo || 0) > (cc.memUpTo || 0)) && (lc.memUpTo || 0) <= cn;
+    lc.messages = cc.messages; lc.updated = Math.max(cc.updated || 0, lc.updated || 0);
+    if(!keepOld && cc.memory){ lc.memory = cc.memory; lc.memUpTo = cc.memUpTo || 0; }
+    if((lc.memUpTo || 0) > cn) lc.memUpTo = cn;
+    changed = true;
+  } else if(cc.memory && (!lc.memory || (cc.memUpTo || 0) > (lc.memUpTo || 0)) && (cc.memUpTo || 0) <= ln){
+    lc.memory = cc.memory; lc.memUpTo = cc.memUpTo || 0; changed = true;
+  }
+  return changed;
+}
+async function doLoad(loud){
+  if(!FB.ready || !S.user) return {ok:false, nologin:true};
+  const uid = S.user.uid;
+  try{
+    const snap = await FB.db.collection('chatlogs').where('uid', '==', uid).get();
+    let changed = 0;
+    snap.forEach(d => { const chats = (d.data() || {}).chats || {}; Object.keys(chats).forEach(id => { if(mergeCloudChat(id, chats[id])) changed++; }); });
+    S.cloudLoaded = uid;
+    if(changed){
+      store.set('kcs2.chats', S.chats);
+      try{ updateBadges(); }catch(_){}
+      if(['home', 'chats', 'profile'].indexOf(S.view) >= 0 && !S.ov) render();
+      toast('Purani chats aur Story Memory cloud se wapas aa gayi (' + changed + ' chat)', 5000);
+    }
+    return {ok:true, changed};
+  }catch(e){
+    if(e && e.code === 'permission-denied'){ S.cloudLoaded = uid; console.warn('cloud restore: Firestore rules abhi isse allow nahi karte'); return {ok:false, denied:true, err:e}; }
+    reportSyncErr(e, !!loud);
+    return {ok:false, err:e};
+  }
+}
+async function doSync(now){
+  const phone = phoneKey(S.set.phone);
+  if(!FB.ready || !phone) return {ok:false, skipped:true};
+  const loud = now === true || now === 'memory';
+  if(S.user && S.cloudLoaded !== S.user.uid){
+    const r = await doLoad(false);
+    if(!r.ok && !r.denied){ if(loud) reportSyncErr(r.err, true); return {ok:false, err:r.err}; }
+  }
+  const chats = {};
+  Object.entries(S.chats).forEach(([id, c]) => {
+    const s = story(id);
+    if(s && c.messages.length){
+      const e = {title:s.title, updated:c.updated, messages:c.messages.filter(m => !m.err)};
+      if(c.memory){ e.memory = c.memory; e.memUpTo = c.memUpTo || 0; }
+      chats[id] = e;
+    }
+  });
+  if(!Object.keys(chats).length) return {ok:true, empty:true};
+  try{
+    const payload = {name:S.set.name, phone, uid:(S.user ? S.user.uid : ''), updatedAt:Date.now(), chats};
+    if(JSON.stringify(payload).length > 900000){ const er = new Error('toolarge'); er.code = 'toolarge'; throw er; }
+    await FB.db.collection('chatlogs').doc(phone).set(payload, {merge:true});
+    if(now === true) toast('Chat backup cloud par ho gaya');
+    else if(now === 'memory') toast('Story ki yaad cloud par save ho gayi');
+    return {ok:true};
+  }catch(e){ reportSyncErr(e, loud); return {ok:false, err:e}; }
+}
+function loadMyChats(loud){ return queueSync(() => doLoad(loud)); }
+function syncMyChats(now){ return queueSync(() => doSync(now)); }
 const saveSet = () => store.set('kcs.settings', S.set);
 const NEXT_MSG = '[Kahani ko aage badhao. Apni taraf se koi naya mod, khulasa ya khatra laao.]';
 function applyTheme(){
@@ -960,7 +1041,7 @@ function aboutCard(s){
   const strip = imgs.length ? imgs.map((u,i) => `<button class="shot" data-a="zoom" data-i="${i}" style="background-image:url('${u}')" aria-label="Photo ${i+1}"></button>`).join('')
     : cv(s,'shot poster',coverTitle(s));
   return `<div class="about"><div class="strip">${strip}</div><h3>About story</h3><p>${esc(s.about || s.premise || s.sub)}</p>
-    <div class="price"><span class="coin hexk">k</span>${COIN_COST}/message</div>
+    <div class="price"><span class="coin hexk">k</span>${COIN_COST * 2}/baat-cheet</div>
     </div>`;
 }
 function openingHtml(s){
@@ -1149,25 +1230,25 @@ function watchCoins(){
         const w = Number(((d && d.exists && d.data()) || {}).welcomeCoins);
         const wc = (Number.isFinite(w) && w >= 0 && w <= 100000) ? Math.floor(w) : WELCOME_COINS;
         S.coins = wc; updateCoinUI();
-        return ref.set({coins: wc, createdAt: Date.now(), updatedAt: Date.now()}).then(() => toast('Swagat hai! ' + wc + ' free coins mile (' + Math.floor(wc / COIN_COST) + ' messages)', 5000));
+        return ref.set({coins: wc, createdAt: Date.now(), updatedAt: Date.now()}).then(() => toast('Swagat hai! ' + wc + ' free coins mile (' + Math.floor(wc / (COIN_COST * 2)) + ' baat-cheet)', 5000));
       }).catch(e => console.warn('welcome', e)).then(() => { S.welcoming = false; });
     }
     updateCoinUI();
   }, e => console.warn('coins', e));
 }
-function coinOk(){
+function coinOk(mult){
   if(coinFree()) return true;
   if(!S.user){ toast('Chat ke liye pehle login karo'); return false; }
   if(S.coins == null){ toast('Coins load ho rahe hain, ek second ruko...'); return false; }
-  if(S.coins < COIN_COST){ needCoins(); return false; }
+  if(S.coins < COIN_COST * (mult || 1)){ needCoins(); return false; }
   return true;
 }
 function needCoins(){
-  openOv('sheet', `<h2>Coins khatam ho gaye</h2><p>Chat jaari rakhne ke liye coins kharido. Har message ke ${COIN_COST} coins lagte hain (dobara banao aur aage badhao ke bhi).</p><button class="btn" data-a="coinsFromSheet">Coins kharido</button><button class="btn ghost" data-a="closeOv">Baad me</button>`);
+  openOv('sheet', `<h2>Coins khatam ho gaye</h2><p>Chat jaari rakhne ke liye coins kharido. Tumhare message ke ${COIN_COST} coins aur AI ke jawab ke ${COIN_COST} coins lagte hain, yani ek baat-cheet ke ${COIN_COST * 2} coins. (Dobara banao aur aage badhao ke sirf ${COIN_COST} coins lagte hain.)</p><button class="btn" data-a="coinsFromSheet">Coins kharido</button><button class="btn ghost" data-a="closeOv">Baad me</button>`);
 }
-function spendCoins(){
+function spendCoins(n){
   if(coinFree() || !FB.ready || !S.user) return;
-  FB.db.collection('users').doc(S.user.uid).update({coins: firebase.firestore.FieldValue.increment(-COIN_COST), updatedAt: Date.now()}).catch(e => console.warn('spend', e));
+  FB.db.collection('users').doc(S.user.uid).update({coins: firebase.firestore.FieldValue.increment(-COIN_COST * (n || 1)), updatedAt: Date.now()}).catch(e => console.warn('spend', e));
 }
 function makeQR(text){
   const data = Array.from(new TextEncoder().encode(text));
@@ -1287,7 +1368,7 @@ function coinsView(){
   return `<div class="chat-head"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><div class="who"><b>Coins</b></div><button class="icon-btn" data-a="purchHistory" aria-label="Purchase History">${I.clock}</button></div>
   <div class="pad">
     <div class="coincard"><span class="coin hexk lg">k</span><div><small>Total Coins Balance</small><b class="cval">${coinVal()}</b></div></div>
-    <p class="coinnote">Har message ke ${COIN_COST} coins lagte hain (dobara banao aur aage badhao ke bhi).</p>
+    <p class="coinnote">Tumhare message ke ${COIN_COST} coins aur AI ke jawab ke ${COIN_COST} coins lagte hain (ek baat-cheet ke ${COIN_COST * 2} coins). Dobara banao aur aage badhao ke sirf ${COIN_COST} coins.</p>
     <div class="sechead"><h2>Coin Packs</h2></div>
     ${COIN_PACKS.map(pack).join('')}
   </div>`;
@@ -1554,7 +1635,7 @@ function initFirebase(cfg){
     }
     if(!FB.app) FB.app = firebase.initializeApp(cfg);
     FB.auth = firebase.auth(); FB.db = firebase.firestore(); try{ FB.db.settings({experimentalAutoDetectLongPolling:true}); }catch(e){} FB.ready = true;
-    FB.auth.onAuthStateChanged(u => { S.user = u; watchCoins(); S.authChecked = true; if(S.ov === 'sheet') showOv('sheet', accountSection() + settingsButtons()); else render(); });
+    FB.auth.onAuthStateChanged(u => { const wasChecked = !!S.authChecked; S.user = u; watchCoins(); S.authChecked = true; if(u) loadMyChats(wasChecked); else S.cloudLoaded = null; if(S.ov === 'sheet') showOv('sheet', accountSection() + settingsButtons()); else render(); });
     listenContent();
     return true;
   }catch(e){ toast('Firebase config sahi se load nahi hui'); FB.ready = false; return false; }
@@ -1754,7 +1835,7 @@ async function maybeSummarize(id){
     const chunk = all.slice(from, cut).map(x => (x.r === 'u' ? 'User: ' : 'Character: ') + x.t).join('\n\n').slice(-30000);
     const sys = 'Tum ek kahani ke yaad-dasht (memory) likhne wale ho. Tumhe PURANI YAAD (agar hai) aur NAYI BAATCHEET milegi. Dono ko jodkar ek nayi, poori yaad likho jisse kahani aage chal sake. Roman Hindi me, saaf paragraph me likho. Zaroor shamil karo: saare kirdaar (naam, umar, rishta, swabhav), jagah, ab tak ki sabhi ghatnayein kram se, jo waade, raaz, dhokhe ya ikraar ho chuke hain, user aur kirdaar ka rishta kaise badla, abhi ka mood aur adhoore sawal. Koi nayi baat apni taraf se mat banao. Purani yaad ki zaroori baatein mat hatao. Zyada se zyada 600 shabd. Sirf yaad likho, aur kuch nahi.';
     const txt = await oneShotCompletion(sys, [{role:'user', content:'PURANI YAAD:\n' + (c.memory || '(abhi koi nahi)') + '\n\nNAYI BAATCHEET:\n' + chunk}], 3000);
-    if(txt && txt.trim().length > 40){ c.memory = txt.trim(); c.memUpTo = cut; saveChats(); }
+    if(txt && txt.trim().length > 40){ c.memory = txt.trim(); c.memUpTo = cut; store.set('kcs2.chats', S.chats); syncMyChats('memory'); }
   }catch(e){ console.warn('memory', e); }
   memRunning[id] = false;
 }
@@ -1993,12 +2074,12 @@ function gate(){
 function sendUser(text){
   text = (text || '').trim(); if(!text) return;
   if(gate()) return;
-  if(!coinOk()) return;
+  if(!coinOk(2 + Object.keys(S.busyChats).length + S.queue.length)) return;
   if(!S.set.key){ aiNotReady(); return; }
   if(!S.chats[S.chatId]) S.chats[S.chatId] = {messages:[], updated:Date.now()};
   const c = S.chats[S.chatId];
   c.messages = c.messages.filter(m => !m.err);
-  c.messages.push({r:'u', t:text, id:rid()}); saveChats(); bumpPopularity(S.chatId);
+  c.messages.push({r:'u', t:text, id:rid()}); spendCoins(); saveChats(); bumpPopularity(S.chatId);
   if(S.busy){ if(!S.queue.includes(S.chatId)) S.queue.push(S.chatId); paintMsgs(S.chatId, true); } else ai(S.chatId);
 }
 async function getHints(){
