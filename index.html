@@ -897,6 +897,7 @@ async function doSync(now){
     const chats = cloudChats(CLOUD_KEEPS[i]);
     if(!Object.keys(chats).length) return {ok:true, empty:true};
     const payload = {name:S.set.name, phone, uid:(S.user ? S.user.uid : ''), updatedAt:Date.now(), chats};
+    if(S.user && S.user.email) payload.email = S.user.email.toLowerCase();
     if(JSON.stringify(payload).length > 700000) continue;
     try{
       await FB.db.collection('chatlogs').doc(phone).set(payload, {merge:true});
