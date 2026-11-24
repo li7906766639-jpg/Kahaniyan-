@@ -446,6 +446,60 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .cs-price{font-size:clamp(19px,5.6vw,24px);font-weight:700;white-space:nowrap;flex:0 0 auto;color:#14151f}
 .cs-buy{position:sticky;bottom:0;background:#fff;border-radius:26px 26px 0 0;padding:14px 20px calc(14px + var(--safe-b,0px));box-shadow:0 -6px 20px rgba(20,21,50,.06)}
 .cs-btn{display:block;width:100%;height:58px;border:0;border-radius:16px;background:#11143a;color:#fff;font:inherit;font-size:19px;font-weight:700}
+/* coin dark + profile sheet */
+.cstore .icon-btn{width:44px;height:44px;border-radius:50%;background:#e7e8f3}
+#app[data-v="coins"][data-cs="dk"] #screen{background:#0e0f14;color:#f3f4fa}
+.cstore.dk{color:#f3f4fa}
+.cstore.dk .chat-head{background:#0e0f14;color:#f3f4fa}
+.cstore.dk .chat-head .who b,.cstore.dk .icon-btn{color:#f3f4fa}
+.cstore.dk .icon-btn{background:#23242f}
+.cstore.dk .cs-note,.cstore.dk .cs-info span,.cstore.dk .cs-info b small{color:#a4a7ba}
+.cstore.dk .sechead h2,.cstore.dk .cs-price{color:#f3f4fa}
+.cstore.dk .cs-pack{background:#1a1b24;color:#f3f4fa;box-shadow:none}
+.cstore.dk .cs-pack.on{border-color:#7f7bff}
+.cstore.dk .cs-rad{background:transparent;border-color:#4a4c5e}
+.cstore.dk .cs-pack.on .cs-rad{background:#7f7bff;border-color:#7f7bff}
+.cstore.dk .cs-buy{background:#161720;box-shadow:none}
+.cstore.dk .cs-btn{background:#5b57f0}
+.pfd{max-width:100%}
+.pfd *{box-sizing:border-box}
+.pf-av{display:flex;align-items:center;gap:16px;margin:4px 0 14px}
+.pf-ci{position:relative;width:84px;height:84px;flex:none}
+.pf-pic{display:grid;place-items:center;width:84px;height:84px;border-radius:50%;background:linear-gradient(150deg,#5b57f0,#e5302c) center/cover no-repeat;font-size:34px;font-weight:700;color:#fff}
+.pf-bd{position:absolute;right:-2px;bottom:-2px;width:28px;height:28px;border-radius:50%;background:var(--surface2);border:3px solid var(--bg);color:var(--text);display:grid;place-items:center}
+.pf-ab{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.pf-ab .row{display:flex;gap:8px;flex-wrap:wrap}
+.pf-g{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 18px;border-radius:23px;border:1.5px solid var(--line);background:transparent;color:var(--text);font-weight:600;font-size:15px;white-space:nowrap}
+.pf-h{font-size:12.5px;color:var(--muted)}
+.pf-f{margin-top:14px}
+.pf-f>label{display:block;margin-bottom:7px;font-size:14px;font-weight:600}
+.pf-fr{display:flex;align-items:center;gap:10px;height:52px;padding:0 14px;border-radius:14px;background:var(--surface);border:1.5px solid var(--line);color:var(--muted)}
+.pf-fr:focus-within{border-color:var(--red)}
+.pf-fr input{flex:1;min-width:0;height:100%;padding:0;border:0;outline:0;background:transparent;color:var(--text);font:inherit;font-size:16px}
+.pf-fr input::placeholder{color:var(--muted)}
+.pf-fr.ro{opacity:.85}
+.pf-lg{flex:none;height:38px;padding:0 15px;border-radius:12px;background:var(--surface2);color:var(--text);font-weight:600;font-size:14px}
+.pf-he{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:12.5px;color:var(--muted)}
+.pfd .btn{height:54px;border-radius:16px;margin-top:22px}
+.pfd .btn.ghost{background:transparent;color:var(--muted);margin-top:4px;height:46px}
+/* round gold coin + purchase history */
+.coin.hexk,.coincard .coin.hexk.big{position:relative;isolation:isolate;clip-path:none;border:0;border-radius:50%;background:linear-gradient(135deg,#fff0a0,#f7b500 55%,#c27400);color:#5a3300;font-weight:800;text-transform:lowercase;display:grid;place-items:center;box-shadow:0 2px 6px rgba(150,90,0,.28)}
+.coin.hexk::before{content:"";position:absolute;inset:13%;border-radius:50%;z-index:-1;background:linear-gradient(135deg,#ffd04a,#f2a400);box-shadow:inset 0 0 0 1.5px rgba(184,106,0,.45)}
+.coin.hexk::after{content:"";position:absolute;inset:8.5%;border-radius:50%;z-index:-1;border:1.5px dotted rgba(255,243,176,.9);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z' fill='white'/%3E%3C/svg%3E") no-repeat 88% 17%/22%}
+.ph-sum{display:flex;gap:8px;margin:6px 0 10px}
+.ph-sum>div{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.ph-sum small{display:block;font-size:12px;color:var(--muted)}
+.ph-sum b{display:block;margin-top:2px;font-size:18px;font-weight:800}
+.ph-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.ph-list .ph-row:last-child{border-bottom:0}
+.coin.hexk.ph-c{width:42px;height:42px;font-size:22px;flex:none}
+.ph-m{flex:1;min-width:0}
+.ph-m b{display:block;font-size:16.5px}
+.ph-m small{display:block;margin-top:2px;font-size:12.5px;color:var(--muted);word-break:break-all}
+.ph-r{flex:none;text-align:right}
+.ph-r b{display:block;font-size:16.5px}
+.ph-r .pst{display:block;margin-top:3px;font-size:12.5px}
+.ph-note{margin:2px 0 8px;font-size:12.5px;color:var(--muted)}
 </style>
 <style id="fit-width">
 /* side (horizontal) hilna band: har phone ki chaudai ke hisaab se fit */
@@ -857,6 +911,15 @@ function reportSyncErr(e, loud){
 }
 const validCount = c => ((c && c.messages) || []).filter(m => m && !m.err && (m.r === 'u' || m.t)).length;
 function mergeCloudChat(id, cc){
+  const cdel = Number(cc && cc.deleted) || 0, tl = Number((S.tomb || {})[id]) || 0;
+  if(cc && (cdel || tl)){
+    const lim = Math.max(cdel, tl), up = Number(cc.updated) || 0;
+    if(!(Array.isArray(cc.messages) && cc.messages.length && up > lim)){
+      const lx = S.chats[id];
+      if(lx && Array.isArray(lx.messages) && lx.messages.length && (Number(lx.updated) || 0) <= lim){ delete S.chats[id]; return 'del'; }
+      return false;
+    }
+  }
   if(!cc || !Array.isArray(cc.messages) || !cc.messages.length) return false;
   const dropped = Number(cc.dropped) || 0;
   const cUp = Math.max(0, (cc.memUpTo || 0) - dropped);
@@ -879,20 +942,63 @@ function mergeCloudChat(id, cc){
   }
   return changed;
 }
+const tombKey = () => 'kcs2.tomb.' + (S.user ? S.user.uid : 'guest');
+function tombEntry(id, ts){ const s = story(id); return {title: (s && s.title) || '', updated: ts, messages: [], dropped: 0, deleted: ts, memory: '', memUpTo: 0}; }
+function addTomb(ids, ts){ const t = store.get(tombKey(), {}) || {}; ids.forEach(id => { t[id] = ts; }); store.set(tombKey(), t); S.tomb = t; }
+async function flushTombs(){
+  if(!FB.ready || !S.user) return {ok:false, skipped:true};
+  const key = tombKey(), tomb = store.get(key, {}) || {}, ids = Object.keys(tomb);
+  if(!ids.length) return {ok:true, none:true};
+  try{
+    const snap = await FB.db.collection('chatlogs').where('uid', '==', S.user.uid).get();
+    const chats = {}; ids.forEach(id => { chats[id] = tombEntry(id, tomb[id]); });
+    const jobs = []; snap.forEach(d => { jobs.push(d.ref.set({chats: chats, updatedAt: Date.now()}, {merge: true})); });
+    await Promise.all(jobs);
+    const cur = store.get(key, {}) || {};
+    ids.forEach(id => { if(cur[id] === tomb[id]) delete cur[id]; });
+    store.set(key, cur); S.tomb = cur;
+    return {ok:true};
+  }catch(e){ reportSyncErr(e, false); return {ok:false, err:e}; }
+}
+function forgetChats(ids){
+  if(!S.user || !FB.ready || !ids.length) return Promise.resolve();
+  addTomb(ids, Date.now());
+  return queueSync(() => flushTombs());
+}
+async function wipeCloudChats(){
+  if(!FB.ready || !S.user) return {ok:true, skipped:true};
+  const ts = Date.now();
+  try{
+    const snap = await FB.db.collection('chatlogs').where('uid', '==', S.user.uid).get();
+    const jobs = [];
+    snap.forEach(d => {
+      const ids = {}; allStories().forEach(s => { ids[s.id] = 1; });
+      Object.keys(S.chats).forEach(id => { ids[id] = 1; });
+      Object.keys((d.data() || {}).chats || {}).forEach(id => { ids[id] = 1; });
+      const chats = {}; Object.keys(ids).forEach(id => { chats[id] = tombEntry(id, ts); });
+      jobs.push(d.ref.set({chats: chats, name: '', updatedAt: ts}, {merge: true}));
+    });
+    await Promise.all(jobs);
+    store.del(tombKey()); S.tomb = {};
+    return {ok:true};
+  }catch(e){ return {ok:false, err:e}; }
+}
 async function doLoad(loud){
   if(!FB.ready || !S.user) return {ok:false, nologin:true};
   const uid = S.user.uid;
   try{
+    S.tomb = store.get(tombKey(), {}) || {};
     const snap = await FB.db.collection('chatlogs').where('uid', '==', uid).get();
-    let changed = 0;
-    snap.forEach(d => { const chats = (d.data() || {}).chats || {}; Object.keys(chats).forEach(id => { if(mergeCloudChat(id, chats[id])) changed++; }); });
+    let changed = 0, removed = 0;
+    snap.forEach(d => { const chats = (d.data() || {}).chats || {}; Object.keys(chats).forEach(id => { const r = mergeCloudChat(id, chats[id]); if(r === 'del') removed++; else if(r) changed++; }); });
     S.cloudLoaded = uid;
-    if(changed){
+    if(changed || removed){
       store.set('kcs2.chats', S.chats);
       try{ updateBadges(); }catch(_){}
       if(['home', 'chats', 'profile'].indexOf(S.view) >= 0 && !S.ov) render();
-      toast('Purani chats aur Story Memory cloud se wapas aa gayi (' + changed + ' chat)', 5000);
+      if(changed) toast('Purani chats aur Story Memory cloud se wapas aa gayi (' + changed + ' chat)', 5000);
     }
+    queueSync(() => flushTombs());
     return {ok:true, changed};
   }catch(e){
     if(e && e.code === 'permission-denied'){ S.cloudLoaded = uid; console.warn('cloud restore: Firestore rules abhi isse allow nahi karte'); return {ok:false, denied:true, err:e}; }
@@ -925,6 +1031,7 @@ async function doSync(now){
     const r = await doLoad(false);
     if(!r.ok && !r.denied){ if(loud) reportSyncErr(r.err, true); return {ok:false, err:r.err}; }
   }
+  await flushTombs();
   for(let i = 0; i < CLOUD_KEEPS.length; i++){
     const chats = cloudChats(CLOUD_KEEPS[i]);
     if(!Object.keys(chats).length) return {ok:true, empty:true};
@@ -1275,13 +1382,25 @@ function profileView(){
   </div>`;
 }
 function profDetailsHtml(){
-  return `<h2>Profile Details</h2><p>Kahani mein tumhara naam isi se dikhta hai.</p>
-    <div class="field"><label>Tumhari photo</label><div class="avrow"><div class="avprev" ${S.set.avatar ? `style="background-image:url('${S.set.avatar}')"` : ''}></div><button class="pill-btn" data-a="pickProfAvatar">Gallery se chuno</button>${S.set.avatar ? '<button class="pill-btn" data-a="rmProfAvatar">Hatao</button>' : ''}</div>
-      <div class="urlrow"><input id="pfAvatarUrl" type="url" placeholder="ya photo ka URL paste karo"><button class="pill-btn" data-a="setProfAvatarUrl">Lagao</button></div></div>
-    <div class="field"><label for="pfName">Naam</label><input id="pfName" value="${esc(S.set.name)}"></div>
-    <div class="field"><label for="pfPhone">Phone number</label><input id="pfPhone" type="tel" inputmode="tel" placeholder="+91XXXXXXXXXX" value="${esc(S.set.phone)}"><small>Support aur chat backup ke liye. Kisi ko bhi dikhta nahi.</small></div>
-    ${S.user ? `<div class="field"><label>Login</label><input value="${esc(S.user.email || S.user.phoneNumber || S.user.uid)}" disabled></div>` : '<div class="notice on">Abhi guest ho. Account banane ke liye "Account setting" mein backend se login karo.</div>'}
-    <button class="btn" data-a="saveProfName">Save karo</button><button class="btn ghost" data-a="closeOv">Band karo</button>`;
+  const ico = p => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+  const IC = {
+    img: ico('<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/>'),
+    link: ico('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1"/>'),
+    user: ico('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+    phone: ico('<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>'),
+    mail: ico('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'),
+    lock: ico('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>').replace(/width="20" height="20"/, 'width="14" height="14"'),
+    cam: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'
+  };
+  const ini = String(S.set.name || '').trim().charAt(0).toUpperCase() || 'K';
+  return `<div class="pfd"><h2>Profile Details</h2><p>Kahani mein tumhara naam isi se dikhta hai.</p>
+    <div class="pf-av"><span class="pf-ci"><span class="pf-pic" ${S.set.avatar ? `style="background-image:url('${S.set.avatar}')"` : ''}>${S.set.avatar ? '' : esc(ini)}</span><span class="pf-bd">${IC.cam}</span></span>
+      <div class="pf-ab"><div class="row"><button class="pf-g" data-a="pickProfAvatar">${IC.img} Gallery se chuno</button>${S.set.avatar ? '<button class="pf-g" data-a="rmProfAvatar">Hatao</button>' : ''}</div><div class="pf-h">JPG ya PNG, chhoti photo behtar</div></div></div>
+    <div class="pf-fr">${IC.link}<input id="pfAvatarUrl" type="url" aria-label="Photo ka URL" placeholder="ya photo ka URL paste karo"><button class="pf-lg" data-a="setProfAvatarUrl">Lagao</button></div>
+    <div class="pf-f"><label for="pfName">Naam</label><div class="pf-fr">${IC.user}<input id="pfName" value="${esc(S.set.name)}"></div></div>
+    <div class="pf-f"><label for="pfPhone">Phone number</label><div class="pf-fr">${IC.phone}<input id="pfPhone" type="tel" inputmode="tel" placeholder="+91XXXXXXXXXX" value="${esc(S.set.phone)}"></div><div class="pf-he">${IC.lock} Support aur chat backup ke liye. Kisi ko bhi dikhta nahi.</div></div>
+    ${S.user ? `<div class="pf-f"><label for="pfLogin">Login</label><div class="pf-fr ro">${IC.mail}<input id="pfLogin" value="${esc(S.user.email || S.user.phoneNumber || S.user.uid)}" disabled></div></div>` : '<div class="notice on" style="margin-top:14px">Abhi guest ho. Account banane ke liye "Account setting" mein backend se login karo.</div>'}
+    <button class="btn" data-a="saveProfName">Save karo</button><button class="btn ghost" data-a="closeOv">Band karo</button></div>`;
 }
 function profDetails(){ openOv('sheet', profDetailsHtml()); }
 function msgHistory(){
@@ -1448,11 +1567,12 @@ const COIN_PACKS = [
 ];
 const fmtC = n => Number(n).toLocaleString('en-IN');
 function coinsView(){
+  if(S.coinDark === undefined) S.coinDark = !!store.get('kcs.coinDark', false);
   if(!COIN_PACKS.find(x => x.id === S.selPack)) S.selPack = (COIN_PACKS.find(x => x.id === 'p79') || COIN_PACKS[0]).id;
   const sel = COIN_PACKS.find(x => x.id === S.selPack);
   const pack = p => `<button class="cs-pack${p.id === S.selPack ? ' on' : ''}" data-a="selPack" data-id="${p.id}" role="radio" aria-checked="${p.id === S.selPack ? 'true' : 'false'}"><span class="cs-row"><span class="cs-rad"></span><span class="coin hexk cs-hs">k</span><span class="cs-info"><b>${fmtC(p.coins)} <small>Coins</small></b><span>${fmtC(Math.floor(p.coins / COIN_COST))} messages</span></span><span class="cs-price">&#8377;${p.price}</span></span></button>`;
-  return `<div class="cstore">
-    <div class="chat-head"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><div class="who"><b>Coins</b></div><button class="icon-btn" data-a="purchHistory" aria-label="Purchase History">${I.clock}</button></div>
+  return `<div class="cstore${S.coinDark ? ' dk' : ''}">
+    <div class="chat-head"><button class="icon-btn" data-a="back" aria-label="Wapas">${I.back}</button><div class="who"><b>Coins</b></div><button class="icon-btn" data-a="coinTheme" aria-label="${S.coinDark ? 'Light mode chalu karo' : 'Dark mode chalu karo'}">${S.coinDark ? I.sun : I.moon}</button><button class="icon-btn" data-a="purchHistory" aria-label="Purchase History">${I.clock}</button></div>
     <div class="cs-body">
       <div class="cs-card"><div><small>Total Coins Balance</small><b class="cval">${coinVal()}</b></div><span class="coin hexk cs-hex">k</span></div>
       <p class="cs-note">Har baar AI ka jawab aane par ${COIN_COST} coins lagte hain. Tumhara message aur AI ka jawab milkar ek message ginta hai (dobara banao aur aage badhao par bhi ${COIN_COST} coins).</p>
@@ -1484,23 +1604,38 @@ async function paySubmit(){
   const utr = el.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
   if(utr.length < 8 || utr.length > 30){ toast('UTR / Transaction ID sahi likho (kam se kam 8 akshar ya ank)', 4000); return; }
   if(!FB.ready || !S.user){ toast('Pehle login karo'); return; }
+  const now = Date.now();
   try{
-    await FB.db.collection('payments').doc(utr).set({uid: S.user.uid, email: S.user.email || '', name: S.set.name || '', phone: S.set.phone || '', packId: p.id, coins: p.coins, price: p.price, utr: utr, status: 'pending', createdAt: Date.now()});
+    await FB.db.collection('payments').doc(utr).set({uid: S.user.uid, email: S.user.email || '', name: S.set.name || '', phone: S.set.phone || '', packId: p.id, coins: p.coins, price: p.price, utr: utr, status: 'pending', createdAt: now});
+    try{ const k = payKey(), arr = (store.get(k, []) || []).filter(r => r.utr !== utr); arr.unshift({utr: utr, coins: p.coins, price: p.price, packId: p.id, status: 'pending', createdAt: now}); store.set(k, arr.slice(0, 300)); }catch(e2){}
     closeOv(() => toast('Request bhej di. Paise check hone ke baad coins mil jayenge.', 5000));
   }catch(e){ toast((e && e.code === 'permission-denied') ? 'Ye UTR pehle hi use ho chuka hai, ya sahi nahi hai.' : 'Request nahi gayi. Internet check karo.', 5000); }
 }
+const payKey = () => 'kcs.pay.' + (S.user ? S.user.uid : 'guest');
+const phWhen = ts => { const d = new Date(Number(ts) || 0); return (Number(ts) > 0 && !isNaN(d)) ? d.toLocaleString('en-IN', {day:'numeric', month:'short', year:'numeric', hour:'numeric', minute:'2-digit', hour12:true}) : '-'; };
+function phHtml(rows, note){
+  rows = rows.slice().sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0));
+  const st = {pending: ['Check ho raha hai', 'pst-p'], paid: ['Coins mil gaye', 'pst-ok'], rejected: ['Reject hua', 'pst-no']};
+  const paid = rows.filter(r => r.status === 'paid');
+  const coins = paid.reduce((a, r) => a + (Number(r.coins) || 0), 0), rs = paid.reduce((a, r) => a + (Number(r.price) || 0), 0);
+  const sum = paid.length ? `<div class="ph-sum"><div><small>Kul coins mile</small><b>${fmtC(coins)}</b></div><div><small>Kul kharch</small><b>&#8377;${fmtC(rs)}</b></div><div><small>Purchase</small><b>${paid.length}</b></div></div>` : '';
+  const list = rows.length ? `<div class="ph-list">${rows.map(r => { const t = st[r.status] || st.pending; return `<div class="ph-row"><span class="coin hexk ph-c">k</span><div class="ph-m"><b>${fmtC(r.coins)} Coins</b><small>${esc(phWhen(r.createdAt))}</small><small>UTR ${esc(r.utr)}</small></div><div class="ph-r"><b>&#8377;${esc(r.price)}</b><span class="pst ${t[1]}">${t[0]}</span></div></div>`; }).join('')}</div>` : '<p class="empty">Abhi koi purchase nahi hui hai.</p>';
+  return `<h2>Purchase History</h2>${note ? `<p class="ph-note">${note}</p>` : ''}${sum}${list}<button class="btn ghost" data-a="closeOv">Band karo</button>`;
+}
 async function purchHistory(){
   const close = '<button class="btn ghost" data-a="closeOv">Band karo</button>';
-  if(!FB.ready || !S.user){ openOv('sheet', `<h2>Purchase History</h2><p class="empty">History dekhne ke liye pehle login karo.</p>${close}`); return; }
-  openOv('sheet', `<h2>Purchase History</h2><p class="empty">Load ho raha hai...</p>`);
+  if(!S.user){ openOv('sheet', `<h2>Purchase History</h2><p class="empty">History dekhne ke liye pehle login karo.</p>${close}`); return; }
+  const key = payKey(), saved = store.get(key, []), loc = Array.isArray(saved) ? saved : [];
+  openOv('sheet', loc.length ? phHtml(loc, 'Naya data load ho raha hai...') : `<h2>Purchase History</h2><p class="empty">Load ho raha hai...</p>`);
+  if(!FB.ready){ if(S.ov === 'sheet') showOv('sheet', loc.length ? phHtml(loc, 'Internet nahi hai, saved history dikha rahe hain.') : `<h2>Purchase History</h2><p class="empty">History load nahi hui. Internet check karo.</p>${close}`); return; }
   try{
     const snap = await FB.db.collection('payments').where('uid', '==', S.user.uid).get();
-    const rows = []; snap.forEach(d => rows.push(d.data()));
-    rows.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    const st = {pending: ['Check ho raha hai', 'pst-p'], paid: ['Coins mil gaye', 'pst-ok'], rejected: ['Reject hua', 'pst-no']};
-    const html = rows.length ? rows.map(r => { const t = st[r.status] || st.pending; return `<div class="prow"><div><b>&#8377;${esc(r.price)} &middot; ${fmtC(r.coins)} Coins</b><small>UTR ${esc(r.utr)} &middot; ${esc(new Date(r.createdAt || 0).toLocaleDateString('en-IN'))}</small></div><span class="pst ${t[1]}">${t[0]}</span></div>`; }).join('') : '<p class="empty">Abhi koi purchase nahi hui hai.</p>';
-    if(S.ov === 'sheet') showOv('sheet', `<h2>Purchase History</h2>${html}${close}`);
-  }catch(e){ if(S.ov === 'sheet') showOv('sheet', `<h2>Purchase History</h2><p class="empty">History load nahi hui. Internet check karo.</p>${close}`); }
+    const map = {}; loc.forEach(r => { if(r && r.utr) map[r.utr] = r; });
+    snap.forEach(d => { const r = d.data(); if(r && r.utr) map[r.utr] = r; });
+    const rows = Object.keys(map).map(k => map[k]).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    store.set(key, rows.slice(0, 300).map(r => ({utr: r.utr, coins: r.coins, price: r.price, packId: r.packId, status: r.status, createdAt: r.createdAt})));
+    if(S.ov === 'sheet') showOv('sheet', phHtml(rows, ''));
+  }catch(e){ if(S.ov === 'sheet') showOv('sheet', loc.length ? phHtml(loc, 'Internet nahi chal raha, saved history dikha rahe hain.') : `<h2>Purchase History</h2><p class="empty">History load nahi hui. Internet check karo.</p>${close}`); }
 }
 
 function rateUs(){
@@ -1537,7 +1672,7 @@ function legalLang(el){
 /* ---------- render ---------- */
 function render(){
   try{ renderInner(); }catch(e){ softFail(e); if(S.view !== 'home'){ S.view = 'home'; try{ renderInner(); }catch(e2){ softFail(e2); } } }
-  const ap = document.getElementById('app'); if(ap) ap.dataset.v = S.view;
+  const ap = document.getElementById('app'); if(ap){ ap.dataset.v = S.view; ap.dataset.cs = (S.view === 'coins' && S.coinDark) ? 'dk' : ''; }
 }
 function renderInner(){
   stopHeroAuto();
@@ -1699,8 +1834,14 @@ function accountView(){
     ${act('eraseAll', I.trash, 'Erase All Data', 'Clear all chats and sign out', 'danger')}
   </div>`;
 }
-function eraseAllData(){
-  if(!confirm('Sab chats is phone se mit jayenge aur logout ho jaoge. Pakka mitana hai?')) return;
+async function eraseAllData(){
+  if(!confirm('Sab chats is phone se aur cloud se mit jayengi aur logout ho jaoge. Coins aur coin history safe rahegi. Pakka mitana hai?')) return;
+  if(S.user && FB.ready){
+    const sp = showMiniSpinner();
+    const r = await wipeCloudChats();
+    sp.remove();
+    if(!r.ok){ toast('Cloud se chats nahi hat payi. Internet check karke dobara try karo.', 5000); return; }
+  }
   S.chats = {}; S.unread = {};
   store.set('kcs2.chats', {}); saveUnread();
   const done = () => { toast('Sab chats mit gaye'); goWelcomeAfterLogout(); };
@@ -2322,7 +2463,13 @@ const ACT = {
   back: () => history.back(),
   settings: () => openSettings(),
   account: () => go('account'), eraseAll: eraseAllData,
-  profile: () => go('profile'), coins: () => go('coins'), cToggle: () => { const el = document.getElementById('csearch'); if(!el) return; el.classList.toggle('open'); const inp = document.getElementById('cq'); if(el.classList.contains('open') && inp) inp.focus(); }, buyPack: el => openPay(el.dataset.id), selPack: el => {
+  profile: () => go('profile'), coins: () => go('coins'), cToggle: () => { const el = document.getElementById('csearch'); if(!el) return; el.classList.toggle('open'); const inp = document.getElementById('cq'); if(el.classList.contains('open') && inp) inp.focus(); }, buyPack: el => openPay(el.dataset.id), coinTheme: () => {
+    S.coinDark = !S.coinDark; store.set('kcs.coinDark', S.coinDark);
+    const sc0 = document.getElementById('screen'), t = sc0 ? sc0.scrollTop : 0;
+    render();
+    const sc1 = document.getElementById('screen'); if(sc1) sc1.scrollTop = t;
+  },
+  selPack: el => {
     S.selPack = el.dataset.id;
     document.querySelectorAll('.cs-pack').forEach(b => { const on = b.dataset.id === S.selPack; b.classList.toggle('on', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
     const p = COIN_PACKS.find(x => x.id === S.selPack), t = document.getElementById('csBuyTxt');
@@ -2413,13 +2560,15 @@ const ACT = {
     if(S.busy) return;
     if(!confirm('Kahani shuru se start hogi. Purani chat hat jayegi. Aage badhein?')) return;
     const sp = showMiniSpinner();
-    setTimeout(() => { sp.remove(); S.chats[S.chatId] = {messages:[], updated:Date.now()}; saveChats(); render(); toast('Kahani restart ho gayi'); }, 900);
+    const rid = S.chatId;
+    setTimeout(() => { sp.remove(); S.chats[rid] = {messages:[], updated:Date.now()}; saveChats(); forgetChats([rid]); render(); toast('Kahani restart ho gayi'); }, 900);
   }),
   delchat: () => closeOv(() => {
     if(S.busy) return;
     if(!confirm('Ye chat hamesha ke liye delete ho jayegi. Aage badhein?')) return;
     const sp = showMiniSpinner();
-    setTimeout(() => { sp.remove(); delete S.chats[S.chatId]; saveChats(); history.back(); toast('Chat delete ho gayi'); }, 900);
+    const did = S.chatId;
+    setTimeout(() => { sp.remove(); delete S.chats[did]; saveChats(); forgetChats([did]); history.back(); toast('Chat delete ho gayi'); }, 900);
   })
 };
 document.addEventListener('click', e => {
