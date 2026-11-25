@@ -1459,7 +1459,8 @@ function needCoins(){
   openOv('sheet', `<h2>Coins khatam ho gaye</h2><p>Chat jaari rakhne ke liye coins kharido. Har baar AI ka jawab aane par ${COIN_COST} coins lagte hain. Tumhara message aur AI ka jawab milkar ek message ginta hai (dobara banao aur aage badhao par bhi ${COIN_COST} coins).</p><button class="btn" data-a="coinsFromSheet">Coins kharido</button><button class="btn ghost" data-a="closeOv">Baad me</button>`);
 }
 function pendingUnits(){ return Object.keys(S.busyChats).length + S.queue.length; }
-function chargeExchange(c){ spendCoins(); }
+let WORKER_CHARGES = 0; /* Worker ne jitni baar coins kaate, utni baar app dobara nahi kaategi */
+function chargeExchange(c){ if(WORKER_CHARGES > 0){ WORKER_CHARGES--; return; } spendCoins(); }
 function spendCoins(n){
   if(coinFree() || !FB.ready || !S.user) return;
   FB.db.collection('users').doc(S.user.uid).update({coins: firebase.firestore.FieldValue.increment(-COIN_COST * (n || 1)), updatedAt: Date.now()}).catch(e => console.warn('spend', e));
@@ -2097,8 +2098,14 @@ function buildHistory(s, c, skip){
   const op = (s.opening || '').replace(/\{user\}/g, S.set.name) || '*Kahani shuru hoti hai.*';
   return [{role:'user', content:'[Chat shuru]'}, {role:'assistant', content:op}, ...past];
 }
+/* Jab app apne Worker se baat kare (key 'via-app'), to Firebase login ka parcha saath bhejo, taki Worker login aur coins jaanch sake */
+async function authHdr(){
+  try{ if(S.set.key === 'via-app' && FB.auth && FB.auth.currentUser) return {'Authorization': 'Bearer ' + await FB.auth.currentUser.getIdToken()}; }catch(e){}
+  return {};
+}
 function apiError(res, msg){
   const hint = {401:'API key galat hai. Settings mein check karo.', 402:'Account ka balance khatam hai.', 403:'API key ki permission nahi hai ya galat provider chuna hai.', 429:'Bahut zyada requests. Thodi der ruk kar dobara try karo.'}[res.status];
+  if((res.status === 401 || res.status === 402) && /^Kahaniyon:/.test(msg || '')){ const e0 = new Error(msg.replace(/^Kahaniyon:\s*/, '')); e0.status = res.status; return e0; }
   const err = new Error(hint || ('Server error ' + res.status + (msg ? ': ' + msg : '')));
   err.status = res.status; return err;
 }
@@ -2123,10 +2130,11 @@ function readT(rd, ac){
 }
 async function streamOpenAI(system, history, onDelta){
   const res = await fetchT(S.set.base + '/chat/completions', {
-    method:'POST', headers:Object.assign({'Content-Type':'application/json', 'Authorization':'Bearer ' + S.set.key}, extraHeaders()),
+    method:'POST', headers:Object.assign({'Content-Type':'application/json', 'Authorization':'Bearer ' + S.set.key}, extraHeaders(), await authHdr()),
     body: JSON.stringify({model:S.set.model, stream:true, temperature:1.1, max_tokens:2500, messages:[{role:'system', content:system}, ...history]})
   });
   if(!res.ok){ let msg = ''; try{ const j = await res.json(); msg = (j.error && j.error.message) || ''; }catch(e){} throw apiError(res, msg); }
+  if(res.headers.get('X-Coins-Charged')) WORKER_CHARGES++;
   const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '', out = '', fin = '', sawDone = false, stalled = false;
   const handle = ln => {
     const l = ln.trim(); if(!l.startsWith('data:')) return;
@@ -2162,9 +2170,10 @@ function geminiWhy(info){
 }
 async function streamGemini(system, history, onDelta){
   const url = `${S.set.base}/models/${encodeURIComponent(S.set.model)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(S.set.key)}`;
-  const res = await fetchT(url, {method:'POST', headers:{'Content-Type':'application/json'},
+  const res = await fetchT(url, {method:'POST', headers:Object.assign({'Content-Type':'application/json'}, await authHdr()),
     body: JSON.stringify({contents:toGeminiContents(history), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:8192}, safetySettings:GEMINI_SAFETY})});
   if(!res.ok){ let msg = ''; try{ const j = await res.json(); msg = (j.error && j.error.message) || ''; }catch(e){} throw apiError(res, msg); }
+  if(res.headers.get('X-Coins-Charged')) WORKER_CHARGES++;
   const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '', out = '', stalled = false; const info = {};
   const handle = ln => {
     const l = ln.trim(); if(!l.startsWith('data:')) return;
@@ -2238,7 +2247,7 @@ async function streamCompletion(system, history, onDelta){
 }
 async function oneShotOpenAI(system, messages, maxTok){
   const res = await fetchT(S.set.base + '/chat/completions', {
-    method:'POST', headers:Object.assign({'Content-Type':'application/json', 'Authorization':'Bearer ' + S.set.key}, extraHeaders()),
+    method:'POST', headers:Object.assign({'Content-Type':'application/json', 'Authorization':'Bearer ' + S.set.key}, extraHeaders(), await authHdr()),
     body: JSON.stringify({model:S.set.model, stream:false, temperature:1.1, max_tokens:maxTok || 200, messages:[{role:'system', content:system}, ...messages]})
   }, true);
   if(!res.ok) throw apiError(res, '');
@@ -2247,7 +2256,7 @@ async function oneShotOpenAI(system, messages, maxTok){
 }
 async function oneShotGemini(system, messages, maxTok){
   const url = `${S.set.base}/models/${encodeURIComponent(S.set.model)}:generateContent?key=${encodeURIComponent(S.set.key)}`;
-  const res = await fetchT(url, {method:'POST', headers:{'Content-Type':'application/json'},
+  const res = await fetchT(url, {method:'POST', headers:Object.assign({'Content-Type':'application/json'}, await authHdr()),
     body: JSON.stringify({contents:toGeminiContents(messages), systemInstruction:{parts:[{text:system}]}, generationConfig:{temperature:1.1, maxOutputTokens:maxTok || 1024}, safetySettings:GEMINI_SAFETY})}, true);
   if(!res.ok) throw apiError(res, '');
   const j = await res.json(); clearTimeout(res.__t);
